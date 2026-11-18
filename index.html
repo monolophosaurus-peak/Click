@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f8dde3">
+<title>cherry booth</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito:wght@500;700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8dde3;
+  --check: rgba(255, 255, 255, .45);
+  --paper: #fffdfb;
+  --ink: #3a1d26;
+  --soft: #8a5a66;
+  --cherry: #c8243f;
+  --butter: #fbe7a1;
+  --line: rgba(58, 29, 38, .12);
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #2a1219; --check: rgba(255, 255, 255, .04); --paper: #3a1d26; --ink: #fbe9ee; --soft: #d6a3b0;
+    --cherry: #ff5a74; --line: rgba(255, 255, 255, .14); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #2a1219; --check: rgba(255, 255, 255, .04); --paper: #3a1d26; --ink: #fbe9ee; --soft: #d6a3b0;
+  --cherry: #ff5a74; --line: rgba(255, 255, 255, .14); color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: 'Nunito', system-ui, sans-serif;
+  /* gingham picnic blanket */
+  background:
+    linear-gradient(90deg, var(--check) 50%, transparent 50%) 0 0 / 44px 44px,
+    linear-gradient(var(--check) 50%, transparent 50%) 0 0 / 44px 44px,
+    var(--bg);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+button { -webkit-user-select: none; user-select: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--cherry); outline-offset: 2px; }
+
+header {
+  max-width: 1080px; margin: 0 auto; padding: 18px 18px 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.logo { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 36px; line-height: 1; letter-spacing: -.01em; white-space: nowrap; }
+.logo span { font-style: normal; font-size: 26px; }
+nav { display: flex; gap: 6px; background: var(--paper); padding: 5px; border-radius: 999px; box-shadow: 0 6px 18px -10px rgba(58, 29, 38, .4); }
+nav button { border: 0; background: none; padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 15px; }
+nav button.on { background: var(--cherry); color: #fff; }
+
+main { max-width: 1080px; margin: 0 auto; padding: 8px 16px 40px; }
+.view { display: none; }
+.view.on { display: block; }
+
+/* ---------- booth ---------- */
+.booth { display: grid; justify-items: center; gap: 18px; padding-top: 6px; }
+.modes { display: flex; gap: 6px; background: var(--paper); padding: 5px; border-radius: 999px; }
+.modes button { border: 0; background: none; padding: 7px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; }
+.modes button.on { background: var(--butter); color: #3a1d26; }
+
+.instant {
+  position: relative; background: #fffdfb; padding: 16px 16px 64px; width: min(420px, 100%, 54vh);
+  box-shadow: 0 22px 40px -22px rgba(58, 29, 38, .55); transform: rotate(-1.2deg);
+}
+.instant::before {
+  /* washi tape */
+  content: ""; position: absolute; top: -14px; left: 50%; width: 120px; height: 30px; transform: translateX(-50%) rotate(3deg);
+  background: repeating-linear-gradient(45deg, rgba(200, 36, 63, .35) 0 8px, rgba(255, 255, 255, .5) 8px 16px);
+}
+.cam { position: relative; aspect-ratio: 1; background: #2a1219; overflow: hidden; }
+.booth .cam { aspect-ratio: var(--aspect, 1); }
+video { width: 100%; height: 100%; object-fit: cover; display: block; }
+video.mirror { transform: scaleX(-1); }
+.cam .msg { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: #fbe9ee; font-weight: 700; }
+.count { position: absolute; inset: 0; display: grid; place-items: center; font-family: 'Instrument Serif', serif; font-size: 140px; color: #fff; text-shadow: 0 4px 30px rgba(0, 0, 0, .4); pointer-events: none; }
+.flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+.flash.go { animation: flash .5s ease-out; }
+@keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+.shots { position: absolute; left: 16px; right: 16px; bottom: 14px; display: flex; gap: 6px; justify-content: center; }
+.shots i { width: 46px; aspect-ratio: var(--aspect, 1); background: #f1e6e8; border: 2px dashed #d9b5bd; background-size: cover; background-position: center; }
+.instant .hand { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; font-family: 'Caveat', cursive; font-size: 26px; color: #8a5a66; }
+.multi .hand { display: none; }
+
+.tpls { display: flex; gap: 8px; overflow-x: auto; max-width: 100%; padding: 4px 2px 6px; scrollbar-width: none; }
+.tpls::-webkit-scrollbar { display: none; }
+.tpl { flex: none; min-width: 86px; border: 2px solid transparent; background: var(--paper); border-radius: 18px; padding: 8px 12px 7px; display: grid; justify-items: center; gap: 1px; font-weight: 800; font-size: 13px; }
+.tpl span { font-size: 24px; line-height: 1.2; }
+.tpl small { color: var(--soft); font-weight: 600; font-size: 11px; }
+.tpl.on { border-color: var(--cherry); }
+.lbl { font-weight: 800; font-size: 14px; margin: 4px 0 8px; }
+#p-elements .swatches + .lbl { margin-top: 16px; }
+.selbar { border-top: 2px dashed var(--line); margin-top: 14px; padding-top: 10px; }
+.selbar .row { display: flex; gap: 6px; margin-top: 6px; }
+.selbar .row .btn { padding: 9px 4px; font-size: 13px; }
+.my { position: relative; }
+.my .x { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--ink); color: var(--bg); font-size: 12px; line-height: 22px; padding: 0; }
+.bgtool { position: fixed; inset: 0; z-index: 40; background: rgba(42, 18, 25, .7); display: grid; grid-template-columns: minmax(0, 460px); justify-content: center; align-content: center; padding: 16px; }
+.bgcard { min-width: 0; background: var(--paper); border-radius: 24px; padding: 18px; width: 100%; max-height: 100%; overflow: auto; }
+.checker { min-width: 0; border-radius: 14px; overflow: hidden; display: grid; place-items: center; padding: 8px;
+  background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 0 0 / 22px 22px; }
+#bgCanvas { max-width: 100%; max-height: 42vh; display: block; touch-action: none; cursor: crosshair; }
+.bgcard .row { display: flex; gap: 8px; margin-top: 10px; }
+.bgcard .btn { padding: 11px 8px; font-size: 14px; }
+.my .cut { position: absolute; top: -6px; left: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: var(--paper); box-shadow: 0 2px 6px rgba(0,0,0,.25); font-size: 11px; line-height: 22px; padding: 0; }
+.wheel { display: flex; gap: 14px; align-items: center; }
+.wheel .disc { position: relative; flex: none; }
+.wheel canvas { display: block; border-radius: 50%; touch-action: none; cursor: crosshair; box-shadow: 0 6px 16px -8px rgba(0,0,0,.4); }
+.wheel .knob { position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.3); pointer-events: none; }
+.wheel .wv { flex: 1; display: grid; gap: 10px; min-width: 0; }
+.wheel .wv label { font-size: 13px; font-weight: 700; color: var(--soft); display: grid; gap: 4px; }
+.wheel .hexrow { display: flex; gap: 8px; align-items: center; }
+.wheel .hex { width: 100%; min-width: 0; font: 700 15px Nunito, sans-serif; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); }
+.wheel .prev { width: 38px; height: 38px; flex: none; border-radius: 50%; border: 2px solid var(--line); }
+.sw.add i { display: grid; place-items: center; font-size: 26px; background: var(--bg); }
+.sw i { background-size: contain; background-repeat: no-repeat; background-position: center; }
+.chips { display: flex; gap: 8px; overflow-x: auto; max-width: 100%; padding: 4px 2px 8px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 2px solid transparent; background: var(--paper); padding: 6px 14px 6px 6px; border-radius: 999px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.chip b { width: 26px; height: 26px; border-radius: 50%; display: block; }
+.chip.on { border-color: var(--cherry); }
+
+.controls { display: flex; align-items: center; gap: 22px; }
+.round { width: 52px; height: 52px; border-radius: 50%; border: 0; background: var(--paper); font-size: 22px; display: grid; place-items: center; box-shadow: 0 6px 14px -8px rgba(58, 29, 38, .5); }
+.shutter { width: 82px; height: 82px; border-radius: 50%; border: 6px solid var(--paper); background: var(--cherry); box-shadow: 0 0 0 3px var(--cherry), 0 12px 24px -10px rgba(200, 36, 63, .7); font-size: 28px; }
+.shutter:active { transform: scale(.94); }
+.tip { color: var(--soft); font-size: 14px; text-align: center; max-width: 34ch; }
+
+/* ---------- editor ---------- */
+.editor { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 22px; align-items: start; }
+.editor > * { min-width: 0; } /* stops the tab row from stretching the page sideways on phones */
+.stage { display: grid; place-items: center; background: rgba(255, 255, 255, .25); border-radius: 22px; padding: 18px; min-height: 300px; }
+#out { max-width: 100%; max-height: 74vh; box-shadow: 0 22px 40px -22px rgba(58, 29, 38, .55); touch-action: none; }
+.panel { background: var(--paper); border-radius: 22px; padding: 16px; box-shadow: 0 16px 30px -22px rgba(58, 29, 38, .5); }
+.tabs { display: flex; gap: 4px; overflow-x: auto; margin-bottom: 14px; }
+.tabs button { border: 0; background: none; padding: 7px 12px; border-radius: 999px; font-weight: 700; font-size: 14px; white-space: nowrap; color: var(--soft); }
+.tabs button.on { background: var(--bg); color: var(--ink); }
+.pane { display: none; }
+.pane.on { display: block; }
+.slider { display: grid; grid-template-columns: 90px 1fr 34px; align-items: center; gap: 8px; margin: 10px 0; font-weight: 700; font-size: 14px; }
+.slider output { text-align: right; color: var(--soft); font-size: 13px; }
+input[type=range] { width: 100%; accent-color: var(--cherry); }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
+.sw { border: 2px solid var(--line); border-radius: 14px; padding: 8px 4px 6px; background: none; font-size: 13px; font-weight: 700; display: grid; gap: 6px; justify-items: center; }
+.sw i { width: 40px; height: 40px; border-radius: 8px; display: block; border: 1px solid var(--line); background-size: cover; }
+.sw.on { border-color: var(--cherry); }
+.stickers { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.stickers button { border: 0; background: var(--bg); border-radius: 12px; font-size: 26px; padding: 6px 0; }
+.small { font-size: 13px; color: var(--soft); margin-top: 10px; }
+.text-in { width: 100%; font: 600 22px 'Caveat', cursive; padding: 10px 14px; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); }
+.toggle { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-weight: 700; font-size: 14px; }
+.toggle input { width: 20px; height: 20px; accent-color: var(--cherry); }
+.actions { display: flex; gap: 10px; margin-top: 16px; }
+.btn { flex: 1; border: 0; border-radius: 16px; padding: 13px; font-weight: 800; font-size: 15px; background: var(--bg); }
+.btn.main { background: var(--cherry); color: #fff; }
+.link { border: 0; background: none; color: var(--cherry); font-weight: 700; padding: 0; font-size: 13px; }
+
+/* ---------- gallery ---------- */
+.gallery { columns: 4 220px; column-gap: 22px; padding-top: 14px; }
+.pin { break-inside: avoid; margin-bottom: 26px; position: relative; border: 0; padding: 0; background: none; display: block; width: 100%; }
+.pin img { width: 100%; display: block; box-shadow: 0 18px 30px -20px rgba(58, 29, 38, .6); cursor: zoom-in; }
+.pin-dl {
+  position: absolute; right: 8px; bottom: 8px; width: 40px; height: 40px; border-radius: 50%; border: 0;
+  background: rgba(255, 253, 251, .92); color: #3a1d26; font-size: 18px; font-weight: 800;
+  display: grid; place-items: center; box-shadow: 0 6px 14px -6px rgba(0, 0, 0, .4);
+}
+.pin-dl:active { transform: scale(.92); }
+.gallery-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-top: 10px; }
+.gallery-top p { color: var(--soft); font-size: 14px; }
+.gallery-top .btn { flex: none; padding: 10px 16px; background: var(--paper); }
+.pin::before {
+  content: ""; position: absolute; top: -10px; left: 50%; width: 76px; height: 22px; z-index: 1;
+  transform: translateX(-50%) rotate(var(--tape, -4deg));
+  background: var(--tapecol, rgba(251, 231, 161, .85));
+}
+.empty { text-align: center; padding: 70px 20px; color: var(--soft); }
+.empty p:first-child { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 34px; color: var(--ink); margin-bottom: 6px; }
+
+.lightbox { position: fixed; inset: 0; background: rgba(42, 18, 25, .82); display: none; place-items: center; z-index: 20; padding: 20px; }
+.lightbox.on { display: grid; }
+.lightbox img { max-width: 100%; max-height: 72vh; box-shadow: 0 20px 50px rgba(0, 0, 0, .5); }
+.lightbox .actions { justify-content: center; }
+.lightbox .btn { flex: none; padding: 12px 22px; background: var(--paper); color: var(--ink); }
+.lightbox .btn.main { background: var(--cherry); color: #fff; }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 30px); opacity: 0; background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-weight: 700; transition: .25s; z-index: 30; pointer-events: none; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 820px) {
+  .editor { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  /* photo stays pinned at the top while you scroll the tools */
+  .stage { position: sticky; top: 0; z-index: 2; padding: 10px; min-height: 0; background: var(--bg); border-radius: 0 0 22px 22px; }
+  #out { max-height: 42vh; }
+  .panel { padding: 12px 12px calc(86px + env(safe-area-inset-bottom, 0px)); }
+  /* retake / save always reachable at the bottom */
+  .panel > .actions { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; z-index: 10; padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--paper); box-shadow: 0 -10px 24px -16px rgba(58, 29, 38, .5); }
+  .booth { gap: 12px; padding-top: 0; }
+  /* keep the camera, filters and shutter all on one screen */
+  .instant { width: min(100%, 46vh); padding: 12px 12px 46px; }
+  .instant .hand { font-size: 22px; bottom: 9px; }
+  .shots { bottom: 9px; }
+  .shots i { width: 38px; }
+  .count { font-size: 110px; }
+  .shutter { width: 76px; height: 76px; }
+  .slider { grid-template-columns: 84px 1fr 30px; }
+  .stickers button { font-size: 28px; padding: 8px 0; }
+  .logo { font-size: 27px; }
+  .logo span { font-size: 20px; }
+  header { padding: 14px 14px 6px; }
+  nav button { padding: 7px 12px; }
+  .gallery { columns: 2 140px; column-gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash.go { animation: none; }
+  .toast { transition: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">cherry booth <span>🍒</span></div>
+  <nav>
+    <button id="tab-booth" class="on">Booth</button>
+    <button id="tab-gallery">Gallery</button>
+  </nav>
+</header>
+
+<main>
+  <!-- BOOTH -->
+  <section class="view on" id="v-booth">
+    <div class="booth" id="booth">
+      <div class="tpls" id="tpls" aria-label="Choose a layout"></div>
+      <div class="instant">
+        <div class="cam">
+          <video id="video" class="mirror" playsinline muted autoplay></video>
+          <div class="msg" id="camMsg">Tap “Start camera” to begin</div>
+          <div class="count" id="count"></div>
+          <div class="flash" id="flash"></div>
+        </div>
+        <div class="hand" id="handNote">say cheese ♡</div>
+        <div class="shots" id="shots" hidden></div>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="controls">
+        <button class="round" id="upload" aria-label="Upload a photo">🖼️</button>
+        <button class="shutter" id="shutter" aria-label="Take photo">📷</button>
+        <button class="round" id="flip" aria-label="Switch camera">🔄</button>
+      </div>
+      <p class="tip" id="tip"></p>
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+  </section>
+
+  <!-- EDITOR -->
+  <section class="view" id="v-edit">
+    <div class="editor">
+      <div class="stage"><canvas id="out"></canvas></div>
+      <div class="panel">
+        <div class="tabs" id="tabs">
+          <button data-pane="filter" class="on">Filter</button>
+          <button data-pane="adjust">Adjust</button>
+          <button data-pane="color">Colour</button>
+          <button data-pane="elements">Elements</button>
+          <button data-pane="stickers">Stickers</button>
+          <button data-pane="text">Text</button>
+        </div>
+        <div class="pane on" id="p-filter"><div class="swatches" id="filterList"></div></div>
+        <div class="pane" id="p-adjust"><div id="sliders"></div><button class="link" id="resetAdj">Reset adjustments</button></div>
+        <div class="pane" id="p-color">
+          <div class="swatches" id="colorList"></div>
+          <p class="lbl" style="margin-top:16px">Any colour you want</p>
+          <div id="wheelMain"></div>
+        </div>
+        <div class="pane" id="p-elements">
+          <p class="small" style="margin:0 0 10px">Tap to add. Add as many as you want, they all match your colour.</p>
+          <div class="swatches" id="elList"></div>
+          <p class="lbl">Your own</p>
+          <div class="swatches" id="myList"></div>
+          <p class="small">Upload a PNG with a see-through background for the cleanest look. Your uploads stay saved here for next time.</p>
+          <input type="file" id="myFile" accept="image/*" multiple hidden>
+        </div>
+        <div class="pane" id="p-stickers">
+          <div class="stickers" id="stickerList"></div>
+          <p class="small">Tap a sticker to add it, then drag it around on the photo.</p>
+        </div>
+        <div class="pane" id="p-text">
+          <input class="text-in" id="caption" maxlength="40" placeholder="write a little caption…">
+          <div id="subRow" hidden><input class="text-in" id="sub" maxlength="30" style="margin-top:10px;font:700 16px Nunito,sans-serif"></div>
+          <label class="toggle"><input type="checkbox" id="dateOn" checked> Date stamp on the photo</label>
+        </div>
+        <div class="selbar" id="selBar" hidden>
+          <p class="lbl">Selected</p>
+          <div id="elColor" hidden>
+            <div class="row" style="align-items:center;margin-bottom:8px"><span style="font-weight:700;font-size:14px;flex:1">Element colour</span><button class="btn" id="elMatch" style="flex:none;padding:8px 12px">Match layout</button></div>
+            <div id="wheelEl"></div>
+          </div>
+          <div class="slider" id="stickerSize"><span>Size</span><input type="range" min="30" max="700" value="120"><output></output></div>
+          <div class="slider" id="stickerRot"><span>Turn</span><input type="range" min="-180" max="180" value="0"><output></output></div>
+          <div class="row"><button class="btn" id="dupSticker">Duplicate</button><button class="btn" id="frontSticker">To front</button><button class="btn" id="delSticker">Remove</button></div>
+        </div>
+        <p class="small" id="dragTip">Drag anything on the photo to move it. Tap it to resize or remove. On a phone, pinch to resize and spin.</p>
+        <button class="link" id="clearStickers">Remove all elements and stickers</button>
+        <div class="actions">
+          <button class="btn" id="retake">Retake</button>
+          <button class="btn" id="dlNow">Download</button>
+          <button class="btn main" id="save">Save to gallery</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="view" id="v-gallery">
+    <div class="gallery-top" id="galleryTop" hidden>
+      <p>Saved on this device. They’ll be here next time you open cherry booth.</p>
+      <button class="btn" id="dlAll">Download all</button>
+    </div>
+    <div class="gallery" id="gallery"></div>
+    <div class="empty" id="empty" hidden>
+      <p>no photos yet</p>
+      <p>Take one in the booth and save it. It’ll show up here.</p>
+    </div>
+  </section>
+</main>
+
+<div class="lightbox" id="lightbox">
+  <div>
+    <img id="lbImg" alt="Saved photo">
+    <div class="actions">
+      <button class="btn" id="lbClose">Close</button>
+      <button class="btn" id="lbDel">Delete</button>
+      <button class="btn main" id="lbDown">Download</button>
+    </div>
+  </div>
+</div>
+<div class="bgtool" id="bgTool" role="dialog" aria-label="Clean up your element" hidden>
+  <div class="bgcard">
+    <p class="lbl" style="font-size:18px">Clean up your element</p>
+    <p class="small" style="margin:0 0 10px">Tap <b>Remove background</b>, or tap any spot on the picture to erase that area.</p>
+    <div class="checker"><canvas id="bgCanvas"></canvas></div>
+    <div class="slider"><span>Strength</span><input type="range" id="bgTol" min="5" max="90" value="32"><output id="bgTolOut">32</output></div>
+    <div class="row">
+      <button class="btn" id="bgAuto">✂️ Remove background</button>
+      <button class="btn" id="bgUndo">Undo</button>
+    </div>
+    <div class="row">
+      <button class="btn" id="bgSkip">Keep original</button>
+      <button class="btn main" id="bgDone">Use this</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// cherry booth - a little online photobooth
+// photos live in your browser (indexeddb), nothing gets uploaded anywhere
+
+const $ = id => document.getElementById(id)
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v))
+let toastT
+function toast(msg) {
+  const el = $('toast')
+  el.textContent = msg
+  el.classList.add('on')
+  clearTimeout(toastT)
+  toastT = setTimeout(() => el.classList.remove('on'), 2200)
+}
+
+// ---------- colour helpers ----------
+const rgb = h => {
+  h = h.replace('#', '')
+  if (h.length == 3) h = [...h].map(x => x + x).join('') // #fff -> #ffffff
+  return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16))
+}
+const mix = (a, b, k) => '#' + rgb(a).map((v, i) => Math.round(v + (rgb(b)[i] - v) * k).toString(16).padStart(2, '0')).join('')
+const lum = h => { const [r, g, b] = rgb(h); return (r * .3 + g * .59 + b * .11) / 255 }
+
+const COLORS = [
+  { id: 'cherry', name: 'Cherry', base: '#9e1b32' },
+  { id: 'wine', name: 'Wine', base: '#5c1424' },
+  { id: 'blush', name: 'Blush', base: '#ec9db1' },
+  { id: 'lilac', name: 'Lilac', base: '#b49ee0' },
+  { id: 'baby', name: 'Baby blue', base: '#8fb6dc' },
+  { id: 'sea', name: 'Sea glass', base: '#5d9ca5' },
+  { id: 'sage', name: 'Sage', base: '#97b192' },
+  { id: 'butter', name: 'Butter', base: '#efcf6e' },
+  { id: 'rust', name: 'Rust', base: '#b23a24' },
+  { id: 'noir', name: 'Noir', base: '#26232a' },
+  { id: 'paper', name: 'Paper', base: '#f6f1ea' },
+]
+function theme(id) {
+  const base = String(id).startsWith('#') ? id : COLORS.find(c => c.id == id).base
+  const light = lum(base) > .62
+  return {
+    base, light,
+    dark: mix(base, '#000', light ? .3 : .45),
+    deep: mix(base, '#000', .7),
+    soft: mix(base, '#fff', .45),
+    pale: mix(base, '#fff', light ? .55 : .86),
+    ink: light ? mix(base, '#000', .72) : mix(base, '#fff', .9), // text that sits on the base colour
+  }
+}
+
+// seeded random so textures dont change every redraw
+function rng(seed) { return () => (seed = seed * 16807 % 2147483647) / 2147483647 }
+
+// ---------- filters ----------
+// numbers for the pixel pass + a css version for the live camera
+const FILTERS = [
+  { id: 'none', name: 'Original', dot: '#e8d4d8', css: 'none', p: {} },
+  { id: 'peach', name: 'Peachy', dot: '#ffc1a8', css: 'saturate(1.1) sepia(.18) brightness(1.06)', p: { warm: .5, sat: 1.1, bright: .05, tint: [10, 0, 0] } },
+  { id: 'golden', name: 'Golden hour', dot: '#f4c26b', css: 'sepia(.3) saturate(1.2) brightness(1.06)', p: { warm: .7, bright: .06, sat: 1.1, tint: [12, 6, -6] } },
+  { id: 'rosy', name: 'Rosy', dot: '#f5a9bd', css: 'saturate(1.05) hue-rotate(-12deg) brightness(1.05)', p: { tint: [18, -4, 6], sat: 1.05, bright: .04, fade: .15 } },
+  { id: 'cherry', name: 'Cherry', dot: '#d63a52', css: 'saturate(1.15) sepia(.15) hue-rotate(-15deg)', p: { tint: [26, -8, -4], sat: 1.1, contrast: 1.05 } },
+  { id: 'film', name: 'Film', dot: '#c9b48f', css: 'contrast(1.08) sepia(.22) saturate(.9)', p: { contrast: 1.1, fade: .35, warm: .25, grain: .25, vig: .3 } },
+  { id: 'instant', name: 'Instant', dot: '#d8c7a2', css: 'sepia(.25) contrast(.92) brightness(1.05) saturate(.9)', p: { fade: .4, warm: .3, split: [[0, 10, 8], [14, 6, -6]], vig: .25 } },
+  { id: 'disposable', name: 'Disposable', dot: '#e8a35c', css: 'saturate(1.2) contrast(1.12) sepia(.15)', p: { warm: .4, sat: 1.2, contrast: 1.12, vig: .35, grain: .3, split: [[0, 8, 0], [10, 4, -8]] } },
+  { id: '90s', name: '90s', dot: '#c79ad6', css: 'saturate(1.15) sepia(.12) contrast(.95)', p: { sat: 1.15, warm: .3, fade: .25, grain: .35, tint: [6, 0, 10] } },
+  { id: 'y2k', name: 'Y2K', dot: '#ff8fd8', css: 'saturate(1.35) contrast(1.15) hue-rotate(-10deg)', p: { sat: 1.35, contrast: 1.15, tint: [10, -5, 18], bright: .04 } },
+  { id: 'dream', name: 'Dreamy', dot: '#f2c6ea', css: 'brightness(1.08) contrast(.9) saturate(.9) hue-rotate(-8deg)', p: { bright: .08, contrast: .9, fade: .3, tint: [12, 0, 14], sat: .9 } },
+  { id: 'glow', name: 'Soft glow', dot: '#fde3d6', css: 'brightness(1.12) contrast(.86) saturate(.95)', p: { bright: .1, contrast: .86, fade: .25, sat: .95 } },
+  { id: 'matte', name: 'Matte', dot: '#bdb3ad', css: 'contrast(.88) saturate(.88) brightness(1.04)', p: { fade: .55, contrast: .92, sat: .9 } },
+  { id: 'cinema', name: 'Cinema', dot: '#4f8a8b', css: 'contrast(1.1) saturate(1.05) sepia(.1) hue-rotate(-6deg)', p: { contrast: 1.1, split: [[-10, 8, 16], [18, 6, -10]], sat: 1.05 } },
+  { id: 'lomo', name: 'Lomo', dot: '#7bc47f', css: 'saturate(1.3) contrast(1.25)', p: { sat: 1.3, contrast: 1.25, vig: .7 } },
+  { id: 'cool', name: 'Cool', dot: '#a8c8f0', css: 'saturate(1.05) hue-rotate(10deg) brightness(1.02)', p: { warm: -.5, sat: 1.05, tint: [-5, 4, 12] } },
+  { id: 'ocean', name: 'Ocean', dot: '#6fb0d8', css: 'hue-rotate(12deg) saturate(.95) brightness(1.03)', p: { tint: [-10, 6, 22], warm: -.4, sat: .95 } },
+  { id: 'vintage', name: 'Vintage', dot: '#d4a46c', css: 'sepia(.45) saturate(.8) contrast(.95)', p: { sat: .75, warm: .6, fade: .4, vig: .4, grain: .3 } },
+  { id: 'sepia', name: 'Sepia', dot: '#a8865a', css: 'sepia(.9) contrast(1.02)', p: { sat: 0, warm: 1, tint: [20, 8, -10], fade: .2 } },
+  { id: 'bw', name: 'B&W', dot: '#8f8f8f', css: 'grayscale(1) contrast(1.2)', p: { sat: 0, contrast: 1.2, grain: .2 } },
+  { id: 'noir', name: 'Noir', dot: '#3b3b3b', css: 'grayscale(1) contrast(1.5)', p: { sat: 0, contrast: 1.45, grain: .25, vig: .45 } },
+]
+const ADJUST = [
+  { id: 'bright', name: 'Brightness', min: -50, max: 50 },
+  { id: 'contrast', name: 'Contrast', min: -50, max: 50 },
+  { id: 'sat', name: 'Saturation', min: -100, max: 100 },
+  { id: 'warm', name: 'Warmth', min: -100, max: 100 },
+  { id: 'fade', name: 'Fade', min: 0, max: 100 },
+  { id: 'grain', name: 'Grain', min: 0, max: 100 },
+]
+const STICKERS = ['🎀', '🍒', '⭐', '💌', '🌸', '🦋', '✨', '💗', '🫧', '🐰', '🍓', '☁️', '🌷', '💋', '🧸', '🎧', '📸', '🌙']
+
+// ---------- little decorations you can swap ----------
+const DECOR = [
+  { id: 'none', name: 'None' },
+  { id: 'bow', name: 'Bow', single: true },
+  { id: 'chrome', name: 'Chrome star' },
+  { id: 'felt', name: 'Felt star' },
+  { id: 'seal', name: 'Wax stamp', single: true },
+  { id: 'cherries', name: 'Cherries', single: true },
+  { id: 'hearts', name: 'Heart' },
+  { id: 'flower', name: 'Flower', single: true },
+  { id: 'butterfly', name: 'Butterfly' },
+  { id: 'tape', name: 'Tape', single: true },
+]
+
+function star(c, r, inner = .45, points = 5) {
+  c.beginPath()
+  for (let i = 0; i < points * 2; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / points, rr = i % 2 ? r * inner : r
+    c.lineTo(Math.cos(a) * rr, Math.sin(a) * rr)
+  }
+  c.closePath()
+}
+function heartPath(c, s) {
+  c.beginPath()
+  c.moveTo(0, s * .35)
+  c.bezierCurveTo(-s * .9, -s * .2, -s * .35, -s * .85, 0, -s * .35)
+  c.bezierCurveTo(s * .35, -s * .85, s * .9, -s * .2, 0, s * .35)
+  c.closePath()
+}
+
+function drawDecor(c, type, x, y, s, rot, th) {
+  c.save()
+  c.translate(x, y)
+  c.rotate(rot)
+  c.shadowColor = 'rgba(0,0,0,.28)'; c.shadowBlur = s * .08; c.shadowOffsetY = s * .04
+  if (type == 'bow') {
+    const g = c.createLinearGradient(-s / 2, -s / 3, s / 2, s / 3)
+    g.addColorStop(0, th.soft); g.addColorStop(.45, th.base); g.addColorStop(1, th.dark)
+    c.fillStyle = g
+    // tails
+    for (const k of [-1, 1]) {
+      c.beginPath(); c.moveTo(0, 0); c.lineTo(k * s * .22, s * .55); c.lineTo(k * s * .12, s * .5); c.lineTo(k * s * .32, s * .62); c.lineTo(k * s * .05, s * .05); c.fill()
+    }
+    // loops
+    for (const k of [-1, 1]) {
+      c.beginPath(); c.moveTo(0, 0)
+      c.bezierCurveTo(k * s * .25, -s * .38, k * s * .58, -s * .3, k * s * .52, -s * .02)
+      c.bezierCurveTo(k * s * .5, s * .2, k * s * .2, s * .12, 0, 0)
+      c.fill()
+    }
+    c.shadowColor = 'transparent'
+    c.strokeStyle = 'rgba(255,255,255,.45)'; c.lineWidth = s * .025
+    for (const k of [-1, 1]) { c.beginPath(); c.moveTo(k * s * .12, -s * .1); c.quadraticCurveTo(k * s * .3, -s * .28, k * s * .45, -s * .12); c.stroke() }
+    c.fillStyle = th.dark
+    c.beginPath(); c.ellipse(0, 0, s * .09, s * .11, 0, 0, 7); c.fill()
+  }
+  if (type == 'chrome') {
+    star(c, s / 2, .48)
+    const g = c.createLinearGradient(-s / 2, -s / 2, s / 2, s / 2)
+    g.addColorStop(0, '#ffffff'); g.addColorStop(.35, '#b9bec6'); g.addColorStop(.55, '#f4f6f8'); g.addColorStop(.8, '#8d939c'); g.addColorStop(1, '#dfe3e8')
+    c.fillStyle = g; c.fill()
+    c.shadowColor = 'transparent'
+    c.strokeStyle = '#6e737b'; c.lineWidth = s * .025; c.stroke()
+    c.fillStyle = 'rgba(255,255,255,.8)'
+    c.beginPath(); c.ellipse(-s * .1, -s * .14, s * .06, s * .03, -.6, 0, 7); c.fill()
+  }
+  if (type == 'felt') {
+    star(c, s / 2, .5)
+    c.fillStyle = th.light ? th.dark : th.deep; c.fill()
+    c.shadowColor = 'transparent'
+    c.strokeStyle = '#e9ddd2'; c.lineWidth = s * .05; c.stroke()
+    c.save(); c.scale(.82, .82); star(c, s / 2, .5); c.restore()
+    c.setLineDash([s * .04, s * .04]); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = s * .02; c.stroke()
+  }
+  if (type == 'seal') {
+    // wax blob with wobbly edge
+    c.beginPath()
+    for (let i = 0; i <= 40; i++) {
+      const a = i / 40 * Math.PI * 2, r = s / 2 * (1 + Math.sin(a * 7) * .04 + Math.sin(a * 3 + 1) * .03)
+      c.lineTo(Math.cos(a) * r, Math.sin(a) * r)
+    }
+    const g = c.createRadialGradient(-s * .15, -s * .15, s * .05, 0, 0, s * .55)
+    g.addColorStop(0, th.soft); g.addColorStop(.5, th.dark); g.addColorStop(1, th.deep)
+    c.fillStyle = g; c.fill()
+    c.shadowColor = 'transparent'
+    c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = s * .03
+    c.beginPath(); c.arc(0, 0, s * .34, 0, 7); c.stroke()
+    c.strokeStyle = 'rgba(255,255,255,.25)'
+    c.beginPath(); c.arc(-s * .01, -s * .01, s * .34, Math.PI, Math.PI * 1.6); c.stroke()
+    // embossed heart
+    c.save(); c.translate(0, s * .02)
+    heartPath(c, s * .32); c.fillStyle = 'rgba(0,0,0,.25)'; c.fill()
+    c.translate(-s * .012, -s * .012); heartPath(c, s * .32); c.strokeStyle = 'rgba(255,255,255,.3)'; c.lineWidth = s * .015; c.stroke()
+    c.restore()
+  }
+  if (type == 'cherries') {
+    c.strokeStyle = '#6d7a2e'; c.lineWidth = s * .035; c.lineCap = 'round'
+    c.beginPath(); c.moveTo(-s * .2, s * .15); c.quadraticCurveTo(-s * .1, -s * .25, s * .05, -s * .42); c.stroke()
+    c.beginPath(); c.moveTo(s * .22, s * .2); c.quadraticCurveTo(s * .15, -s * .2, s * .05, -s * .42); c.stroke()
+    c.fillStyle = '#7fa63a'
+    c.beginPath(); c.ellipse(s * .17, -s * .4, s * .14, s * .06, -.4, 0, 7); c.fill()
+    for (const [cx, cy] of [[-s * .2, s * .22], [s * .22, s * .27]]) {
+      const g = c.createRadialGradient(cx - s * .06, cy - s * .06, s * .02, cx, cy, s * .2)
+      g.addColorStop(0, '#ff6b7d'); g.addColorStop(.5, '#b3122e'); g.addColorStop(1, '#5a0714')
+      c.fillStyle = g
+      c.beginPath(); c.arc(cx, cy, s * .19, 0, 7); c.fill()
+      c.fillStyle = 'rgba(255,255,255,.7)'
+      c.beginPath(); c.ellipse(cx - s * .07, cy - s * .07, s * .04, s * .025, -.7, 0, 7); c.fill()
+    }
+  }
+  if (type == 'hearts') {
+    heartPath(c, s * .55)
+    const g = c.createLinearGradient(0, -s / 2, 0, s / 2)
+    g.addColorStop(0, th.soft); g.addColorStop(1, th.dark)
+    c.fillStyle = g; c.fill()
+    c.shadowColor = 'transparent'
+    c.fillStyle = 'rgba(255,255,255,.55)'
+    c.beginPath(); c.ellipse(-s * .15, -s * .12, s * .07, s * .04, -.6, 0, 7); c.fill()
+  }
+  if (type == 'flower') {
+    for (let i = 0; i < 6; i++) {
+      c.save(); c.rotate(i * Math.PI / 3)
+      const g = c.createLinearGradient(0, 0, 0, -s / 2)
+      g.addColorStop(0, th.dark); g.addColorStop(.5, th.base); g.addColorStop(1, th.pale)
+      c.fillStyle = g
+      c.beginPath(); c.ellipse(0, -s * .24, s * .14, s * .25, 0, 0, 7); c.fill()
+      c.restore()
+    }
+    c.shadowColor = 'transparent'
+    c.fillStyle = '#2b2026'
+    c.beginPath(); c.arc(0, 0, s * .08, 0, 7); c.fill()
+    c.fillStyle = '#c9a24a'
+    for (let i = 0; i < 8; i++) { const a = i / 8 * 7; c.beginPath(); c.arc(Math.cos(a) * s * .12, Math.sin(a) * s * .12, s * .02, 0, 7); c.fill() }
+  }
+  if (type == 'butterfly') {
+    const g = c.createLinearGradient(-s / 2, 0, s / 2, 0)
+    g.addColorStop(0, th.soft); g.addColorStop(.5, th.dark); g.addColorStop(1, th.soft)
+    c.fillStyle = g
+    for (const k of [-1, 1]) {
+      c.beginPath(); c.ellipse(k * s * .2, -s * .1, s * .2, s * .26, k * .5, 0, 7); c.fill()
+      c.beginPath(); c.ellipse(k * s * .15, s * .2, s * .13, s * .16, -k * .4, 0, 7); c.fill()
+    }
+    c.shadowColor = 'transparent'
+    c.fillStyle = '#2b2026'
+    c.beginPath(); c.ellipse(0, 0, s * .03, s * .25, 0, 0, 7); c.fill()
+    c.strokeStyle = '#2b2026'; c.lineWidth = s * .015
+    c.beginPath(); c.moveTo(0, -s * .22); c.lineTo(-s * .08, -s * .38); c.moveTo(0, -s * .22); c.lineTo(s * .08, -s * .38); c.stroke()
+  }
+  if (type == 'tape') {
+    c.shadowColor = 'transparent'
+    c.fillStyle = th.light ? mix(th.base, '#fff', .3) + 'cc' : th.soft + 'bb'
+    c.beginPath()
+    c.moveTo(-s * .6, -s * .14)
+    for (let i = 0; i <= 6; i++) c.lineTo(-s * .6 + i * s * .2, -s * .14 + (i % 2 ? 3 : -3))
+    c.lineTo(s * .6, s * .14)
+    for (let i = 6; i >= 0; i--) c.lineTo(-s * .6 + i * s * .2, s * .14 + (i % 2 ? 3 : -3))
+    c.closePath(); c.fill()
+    c.fillStyle = 'rgba(255,255,255,.35)'
+    for (let i = -2; i <= 2; i++) c.fillRect(i * s * .2 - s * .04, -s * .14, s * .06, s * .28)
+  }
+  c.restore()
+}
+
+// ---------- templates ----------
+// slots are the photo spots (centre, size, rotation). A/B are where the swappable decorations go
+function card(c, x, y, w, h, rot, fill, seed, texture = true) {
+  c.save()
+  c.translate(x, y); c.rotate(rot)
+  c.shadowColor = 'rgba(0,0,0,.3)'; c.shadowBlur = 30; c.shadowOffsetY = 14
+  c.fillStyle = fill
+  c.fillRect(-w / 2, -h / 2, w, h)
+  c.shadowColor = 'transparent'
+  if (texture) {
+    // paper speckle so it looks printed, not flat
+    const r = rng(seed)
+    for (let i = 0; i < w * h / 900; i++) {
+      c.fillStyle = r() < .5 ? 'rgba(0,0,0,.07)' : 'rgba(255,255,255,.06)'
+      c.fillRect(-w / 2 + r() * w, -h / 2 + r() * h, 2 + r() * 4, 2 + r() * 4)
+    }
+    const g = c.createLinearGradient(0, -h / 2, 0, h / 2)
+    g.addColorStop(0, 'rgba(255,255,255,.06)'); g.addColorStop(1, 'rgba(0,0,0,.12)')
+    c.fillStyle = g; c.fillRect(-w / 2, -h / 2, w, h)
+  }
+  c.restore()
+}
+// where a point inside a rotated card ends up on the canvas
+const at = (x, y, rot, lx, ly) => ({ x: x + lx * Math.cos(rot) - ly * Math.sin(rot), y: y + lx * Math.sin(rot) + ly * Math.cos(rot) })
+function caption(c, text, x, y, size, color, rot = 0) {
+  if (!text) return
+  c.save(); c.translate(x, y); c.rotate(rot)
+  c.font = `600 ${size}px Caveat, cursive`
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = color
+  c.fillText(text, 0, 0)
+  c.restore()
+}
+function bg(c, W, H, color) { c.fillStyle = color; c.fillRect(0, 0, W, H) }
+
+
+// conic "brushed chrome" fill (falls back to a flat grey on old browsers)
+function metal(c, x, y, stops) {
+  if (!c.createConicGradient) return '#cfcac0'
+  const g = c.createConicGradient(-.4, x, y)
+  stops.forEach((s, i) => g.addColorStop(i / (stops.length - 1), s))
+  return g
+}
+// a glossy vinyl: grooves, light streaks that catch the light, rim + label shine
+function shinyRecord(c, cx, cy, R, labelR, vinyl, label) {
+  c.save()
+  c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 50; c.shadowOffsetY = 18
+  c.fillStyle = vinyl; c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fill()
+  c.restore()
+  // grooves, slightly uneven so it looks real
+  const r = rng(77)
+  for (let rr = labelR + 30; rr < R - 8; rr += 4) {
+    c.strokeStyle = `rgba(255,255,255,${.025 + r() * .05})`; c.lineWidth = 1.5
+    c.beginPath(); c.arc(cx, cy, rr, 0, 7); c.stroke()
+  }
+  // gaps between songs
+  c.strokeStyle = 'rgba(255,255,255,.14)'; c.lineWidth = 5
+  for (const k of [.38, .55, .72, .86]) { c.beginPath(); c.arc(cx, cy, labelR + (R - labelR) * k, 0, 7); c.stroke() }
+  // the shine: light streaks swept around the disc
+  c.save()
+  c.beginPath(); c.arc(cx, cy, R, 0, 7); c.arc(cx, cy, labelR, 0, 7, true); c.clip()
+  if (c.createConicGradient) {
+    const g = c.createConicGradient(-.9, cx, cy)
+    const sh = [[0, 0], [.04, .55], [.09, .12], [.14, 0], [.45, 0], [.5, .4], [.55, .08], [.6, 0], [.86, 0], [.9, .25], [.94, 0], [1, 0]]
+    sh.forEach(([p, a]) => g.addColorStop(p, `rgba(255,255,255,${a})`))
+    c.fillStyle = g
+  } else c.fillStyle = 'rgba(255,255,255,.08)'
+  c.globalCompositeOperation = 'lighter'
+  c.fillRect(cx - R, cy - R, R * 2, R * 2)
+  c.restore()
+  // rim highlight
+  const rim = c.createLinearGradient(cx - R, cy - R, cx + R, cy + R)
+  rim.addColorStop(0, 'rgba(255,255,255,.5)'); rim.addColorStop(.5, 'rgba(255,255,255,0)'); rim.addColorStop(1, 'rgba(255,255,255,.35)')
+  c.strokeStyle = rim; c.lineWidth = 6
+  c.beginPath(); c.arc(cx, cy, R - 3, 0, 7); c.stroke()
+  if (!label) return
+  // glossy label
+  const lg = c.createRadialGradient(cx - labelR * .35, cy - labelR * .4, labelR * .05, cx, cy, labelR)
+  lg.addColorStop(0, mix(label, '#fff', .35)); lg.addColorStop(.6, label); lg.addColorStop(1, mix(label, '#000', .35))
+  c.fillStyle = lg; c.beginPath(); c.arc(cx, cy, labelR, 0, 7); c.fill()
+  c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 3
+  c.beginPath(); c.arc(cx, cy, labelR * .82, 0, 7); c.stroke()
+  c.fillStyle = 'rgba(255,255,255,.22)'
+  c.beginPath(); c.ellipse(cx + labelR * .2, cy - labelR * .5, labelR * .5, labelR * .16, -.45, 0, 7); c.fill()
+}
+// a little sheen across a printed photo card
+function gloss(c, x, y, w, h, rot) {
+  c.save(); c.translate(x, y); c.rotate(rot)
+  c.beginPath(); c.rect(-w / 2, -h / 2, w, h); c.clip()
+  const g = c.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2)
+  g.addColorStop(0, 'rgba(255,255,255,.28)'); g.addColorStop(.3, 'rgba(255,255,255,.06)'); g.addColorStop(.45, 'rgba(255,255,255,0)')
+  g.addColorStop(.62, 'rgba(255,255,255,.12)'); g.addColorStop(.68, 'rgba(255,255,255,0)')
+  c.fillStyle = g; c.fillRect(-w / 2, -h / 2, w, h)
+  c.restore()
+}
+
+const LOVE = { x: 560, y: 960, w: 860, h: 1020, rot: -.02 }
+const VINYL_CARDS = [[720, 430, .38], [790, 1030, -.24], [640, 1600, .17]]
+const DECK_CARDS = [[770, 330, -.12], [800, 965, .16], [780, 1590, -.1]]
+const FILM = { x: 575, y: 980, w: 700, h: 1780, rot: .06 }
+
+const TEMPLATES = [
+  {
+    id: 'classic', name: 'Classic', emoji: '🤍', count: 1, aspect: 1, W: 1120, H: 1330, color: 'paper', A: 'tape', B: 'none',
+    slots: () => [{ x: 560, y: 560, w: 1000, h: 1000, rot: 0 }],
+    back: (c, t) => bg(c, 1120, 1330, t.light ? mix(t.base, '#fff', .4) : t.base),
+    front: (c, t, e) => caption(c, e.caption, 560, 1200, 84, t.light ? t.deep : t.pale),
+    a: [[560, 18, 220, .03]], b: [[1010, 1190, 190, .2]],
+  },
+  {
+    id: 'strip', name: 'Strip', emoji: '🎞️', count: 4, aspect: 4 / 3, W: 700, H: 2144, color: 'blush', A: 'tape', B: 'none',
+    slots: () => [0, 1, 2, 3].map(i => ({ x: 350, y: 275 + i * 478, w: 600, h: 450, rot: 0 })),
+    back: (c, t) => bg(c, 700, 2144, t.light ? mix(t.base, '#fff', .4) : t.base),
+    front: (c, t, e) => caption(c, e.caption, 350, 2034, 64, t.light ? t.deep : t.pale),
+    a: [[350, 14, 170, -.04]], b: [[600, 2050, 160, .2]],
+  },
+  {
+    id: 'love', name: 'Love note', emoji: '💌', count: 1, aspect: 750 / 760, W: 1080, H: 1920, color: 'cherry', A: 'felt', B: 'seal',
+    slots: () => { const p = at(LOVE.x, LOVE.y, LOVE.rot, 0, -75); return [{ ...p, w: 750, h: 760, rot: LOVE.rot }] },
+    back: (c, t) => {
+      bg(c, 1080, 1920, t.light ? mix(t.base, '#fff', .6) : mix(t.base, '#fff', .8))
+      // newspaper scraps poking out behind
+      for (const [x, y, w, h, r] of [[420, 820, 520, 960, -.07], [800, 1450, 320, 150, .04]]) {
+        c.save(); c.translate(x, y); c.rotate(r)
+        c.shadowColor = 'rgba(0,0,0,.15)'; c.shadowBlur = 10
+        c.fillStyle = '#ece6da'; c.fillRect(-w / 2, -h / 2, w, h)
+        c.shadowColor = 'transparent'
+        c.beginPath(); c.rect(-w / 2, -h / 2, w, h); c.clip()
+        c.fillStyle = '#3d3a36'; c.font = 'italic 46px Georgia, serif'; c.textBaseline = 'top'
+        for (let yy = -h / 2 + 8; yy < h / 2; yy += 58) c.fillText('Love love love love', -w / 2 + 10 - (yy % 3) * 14, yy)
+        c.restore()
+      }
+      card(c, LOVE.x, LOVE.y, LOVE.w, LOVE.h, LOVE.rot, t.base, 7)
+    },
+    front: (c, t, e) => { const p = at(LOVE.x, LOVE.y, LOVE.rot, 70, 405); caption(c, e.caption, p.x, p.y, 90, t.ink, LOVE.rot) },
+    a: [[870, 420, 150, -.2], [1000, 470, 180, .15], [960, 610, 125, .3]], b: [[200, 1400, 300, -.1]],
+  },
+  {
+    id: 'digicam', name: 'Digicam', emoji: '📷', count: 1, aspect: 4 / 3, W: 1080, H: 1920, color: 'wine', A: 'cherries', B: 'chrome',
+    slots: () => [{ x: 380, y: 997, w: 500, h: 375, rot: 0, r: 6 }],
+    back: (c, t, e) => {
+      bg(c, 1080, 1920, mix(t.base, '#fff', t.light ? .6 : .88))
+      // shutter button on top
+      const sg = c.createLinearGradient(0, 630, 0, 690)
+      sg.addColorStop(0, '#f4f5f7'); sg.addColorStop(1, '#8e939b')
+      c.fillStyle = sg; c.beginPath(); c.roundRect(700, 636, 170, 60, 14); c.fill()
+      // body
+      c.save()
+      c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 40; c.shadowOffsetY = 20
+      const g = c.createLinearGradient(0, 680, 0, 1270)
+      g.addColorStop(0, mix(t.base, '#fff', .18)); g.addColorStop(.35, t.base); g.addColorStop(1, t.dark)
+      c.fillStyle = g; c.beginPath(); c.roundRect(70, 680, 940, 590, 46); c.fill()
+      c.restore()
+      c.strokeStyle = 'rgba(255,255,255,.25)'; c.lineWidth = 4
+      c.beginPath(); c.roundRect(76, 686, 928, 578, 42); c.stroke()
+      // screen bezel
+      c.fillStyle = t.deep; c.beginPath(); c.roundRect(100, 770, 560, 460, 24); c.fill()
+      c.strokeStyle = mix(t.base, '#fff', .2); c.lineWidth = 5; c.stroke()
+      c.fillStyle = '#111'; c.beginPath(); c.roundRect(122, 802, 516, 391, 10); c.fill()
+      // name printed on the body
+      c.fillStyle = t.light ? t.deep : t.pale
+      c.font = 'italic 700 46px Georgia, serif'; c.textAlign = 'center'; c.textBaseline = 'alphabetic'
+      c.fillText(e.sub || 'cherry', 380, 755)
+      // viewfinder + lens
+      c.fillStyle = t.deep; c.beginPath(); c.roundRect(560, 698, 150, 66, 22); c.fill()
+      const lg = c.createRadialGradient(592, 722, 4, 600, 731, 28)
+      lg.addColorStop(0, '#5a6270'); lg.addColorStop(1, '#0c0d10')
+      c.fillStyle = lg; c.beginPath(); c.arc(600, 731, 26, 0, 7); c.fill()
+      c.fillStyle = '#222'; for (const y of [716, 746]) { c.beginPath(); c.arc(672, y, 8, 0, 7); c.fill() }
+      // mode switch
+      c.fillStyle = t.deep; c.beginPath(); c.roundRect(740, 720, 190, 46, 16); c.fill()
+      c.fillStyle = mix(t.base, '#fff', .15); for (let i = 0; i < 3; i++) c.fillRect(770 + i * 48, 728, 30, 30)
+      // buttons + dial
+      const btn = (x, y, r, label) => {
+        c.fillStyle = t.deep; c.beginPath(); c.arc(x, y, r + 8, 0, 7); c.fill()
+        const bg2 = c.createRadialGradient(x - r / 3, y - r / 3, 2, x, y, r)
+        bg2.addColorStop(0, '#f6f7f9'); bg2.addColorStop(1, '#8a9099')
+        c.fillStyle = bg2; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill()
+        c.fillStyle = '#2b2b30'; c.font = `700 ${r * .42}px Nunito, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle'
+        c.fillText(label, x, y + 1)
+      }
+      btn(790, 850, 42, 'MENU')
+      c.fillStyle = t.deep; c.beginPath(); c.arc(845, 1020, 126, 0, 7); c.fill()
+      const dg = c.createRadialGradient(820, 990, 10, 845, 1020, 96)
+      dg.addColorStop(0, '#ffffff'); dg.addColorStop(.6, '#b6bbc3'); dg.addColorStop(1, '#7e848d')
+      c.fillStyle = dg; c.beginPath(); c.arc(845, 1020, 96, 0, 7); c.fill()
+      c.fillStyle = t.base; c.beginPath(); c.arc(845, 1020, 42, 0, 7); c.fill()
+      c.fillStyle = t.ink; c.font = '700 26px Nunito, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('OK', 845, 1021)
+      c.fillStyle = '#333'; for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; c.beginPath(); c.arc(845 + Math.cos(a) * 70, 1020 + Math.sin(a) * 70, 5, 0, 7); c.fill() }
+      btn(790, 1185, 40, 'DISP')
+      c.fillStyle = t.deep; for (let i = 0; i < 9; i++) { c.beginPath(); c.arc(905 + (i % 3) * 18, 830 + Math.floor(i / 3) * 18, 4, 0, 7); c.fill() }
+    },
+    front: (c, t, e) => {
+      // screen glare
+      c.save(); c.beginPath(); c.roundRect(130, 810, 500, 375, 6); c.clip()
+      const g = c.createLinearGradient(130, 810, 630, 1185)
+      g.addColorStop(0, 'rgba(255,255,255,.22)'); g.addColorStop(.4, 'rgba(255,255,255,0)')
+      c.fillStyle = g; c.fillRect(130, 810, 500, 375)
+      c.restore()
+      caption(c, e.caption, 540, 1390, 96, t.light ? t.deep : t.dark)
+    },
+    a: [[930, 690, 260, .1]], b: [[120, 690, 190, -.25], [960, 1250, 80, .2]],
+  },
+  {
+    id: 'vinyl', name: 'Vinyl', emoji: '💿', count: 3, aspect: 1, W: 1080, H: 1920, color: 'wine', A: 'none', B: 'none',
+    slots: () => VINYL_CARDS.map(([x, y, r]) => ({ ...at(x, y, r, 0, -45), w: 448, h: 448, rot: r })),
+    back: (c, t, e) => {
+      // soft studio backdrop instead of flat white
+      const bgG = c.createRadialGradient(700, 700, 100, 540, 960, 1300)
+      bgG.addColorStop(0, '#ffffff'); bgG.addColorStop(1, mix(t.base, '#fff', .82))
+      c.fillStyle = bgG; c.fillRect(0, 0, 1080, 1920)
+      const cx = 60, cy = 1080
+      shinyRecord(c, cx, cy, 760, 300, '#0b0b0d', t.light ? t.dark : t.base)
+      c.fillStyle = '#fbfaf8'; c.beginPath(); c.arc(cx, cy, 24, 0, 7); c.fill()
+      // caption printed around the label
+      const text = ((e.caption || 'the best thing about me is you') + ' ·········· ')
+      c.font = '600 54px Caveat, cursive'; c.textAlign = 'center'; c.textBaseline = 'middle'
+      c.fillStyle = '#e6e6e6'; c.shadowColor = 'rgba(255,255,255,.5)'; c.shadowBlur = 6
+      let a = -1.25
+      for (const ch of text) {
+        if (a > 1.35) break
+        const w = c.measureText(ch).width
+        a += w / 2 / 345
+        c.save(); c.translate(cx + Math.cos(a) * 345, cy + Math.sin(a) * 345); c.rotate(a + Math.PI / 2); c.fillText(ch, 0, 0); c.restore()
+        a += w / 2 / 345
+      }
+      c.shadowBlur = 0
+      VINYL_CARDS.forEach(([x, y, r], i) => card(c, x, y, 520, 610, r, t.light ? t.dark : t.base, 11 + i))
+    },
+    front: (c, t, e) => VINYL_CARDS.forEach(([x, y, r]) => gloss(c, x, y, 520, 610, r)),
+    a: [[960, 190, 160, .2]], b: [[930, 1820, 170, -.2]],
+  },
+  {
+    id: 'deck', name: 'Turntable', emoji: '🎶', count: 3, aspect: 1, W: 1080, H: 1920, color: 'sea', A: 'flower', B: 'none',
+    slots: () => DECK_CARDS.map(([x, y, r]) => ({ ...at(x, y, r, 0, -40), w: 480, h: 480, rot: r })),
+    back: (c, t, e) => {
+      // polished brushed metal
+      const m = c.createLinearGradient(0, 0, 1080, 1920)
+      m.addColorStop(0, '#f6f4ef'); m.addColorStop(.35, '#cfcac0'); m.addColorStop(.55, '#f3f1ec'); m.addColorStop(.8, '#bdb8ad'); m.addColorStop(1, '#e8e5de')
+      c.fillStyle = m; c.fillRect(0, 0, 1080, 1920)
+      const r0 = rng(5)
+      for (let y = 0; y < 1920; y += 3) {
+        c.fillStyle = r0() < .5 ? 'rgba(255,255,255,.18)' : 'rgba(0,0,0,.035)'
+        c.fillRect(0, y, 1080, 1)
+      }
+      const cx = -40, cy = 1020
+      // chrome platter rim with strobe dots
+      c.save()
+      c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 50; c.shadowOffsetY = 10
+      c.fillStyle = metal(c, cx, cy, ['#ffffff', '#8f8c86', '#e9e7e2', '#6f6c66', '#ffffff', '#9a978f', '#f2f0eb'])
+      c.beginPath(); c.arc(cx, cy, 1015, 0, 7); c.fill()
+      c.restore()
+      c.fillStyle = 'rgba(40,40,40,.55)'
+      for (let i = 0; i < 180; i++) { const a = i / 180 * Math.PI * 2; c.fillRect(cx + Math.cos(a) * 1000 - 3, cy + Math.sin(a) * 1000 - 3, 6, 6) }
+      shinyRecord(c, cx, cy, 975, 340, mix(t.base, '#000', .3), null)
+      // paper label with tick marks
+      const lg = c.createRadialGradient(cx - 80, cy - 100, 20, cx, cy, 340)
+      lg.addColorStop(0, '#fffdf6'); lg.addColorStop(1, '#e4dcc6')
+      c.fillStyle = lg; c.beginPath(); c.arc(cx, cy, 340, 0, 7); c.fill()
+      c.strokeStyle = '#3c3a36'; c.lineWidth = 3
+      for (let i = 0; i < 60; i++) {
+        const a = i / 60 * Math.PI * 2, r1 = i % 5 ? 300 : 285
+        c.beginPath(); c.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); c.lineTo(cx + Math.cos(a) * 315, cy + Math.sin(a) * 315); c.stroke()
+      }
+      c.fillStyle = '#3c3a36'; c.font = 'italic 40px Georgia, serif'; c.textAlign = 'left'; c.textBaseline = 'middle'
+      c.save(); c.translate(cx + 140, cy); c.rotate(Math.PI / 2); c.fillText(e.sub || 'side A', -60, 0); c.restore()
+      c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.ellipse(cx + 60, cy - 170, 160, 60, -.5, 0, 7); c.fill()
+      // chrome spindle
+      c.fillStyle = metal(c, cx, cy, ['#fff', '#777', '#eee', '#666', '#fff']); c.beginPath(); c.arc(cx, cy, 30, 0, 7); c.fill()
+      // tonearm base, chrome with a dotted mesh
+      c.save()
+      c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = 30; c.shadowOffsetY = 10
+      c.fillStyle = metal(c, 1000, 310, ['#ffffff', '#9a978f', '#f7f6f2', '#7c7972', '#ffffff', '#a8a59e', '#ffffff'])
+      c.beginPath(); c.arc(1000, 310, 140, 0, 7); c.fill()
+      c.restore()
+      c.fillStyle = 'rgba(0,0,0,.28)'
+      for (let i = 0; i < 90; i++) { const a = i * 2.4, r = Math.sqrt(i) * 12; c.fillRect(1000 + Math.cos(a) * r, 310 + Math.sin(a) * r, 4, 4) }
+      // the arm: a shiny tube (light down the middle, dark at the edges)
+      const ax1 = 985, ay1 = 330, ax2 = 510, ay2 = 1610, ang = Math.atan2(ay2 - ay1, ax2 - ax1), len = Math.hypot(ax2 - ax1, ay2 - ay1)
+      c.save()
+      c.translate(ax1, ay1); c.rotate(ang)
+      c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 24; c.shadowOffsetY = 16
+      const tube = c.createLinearGradient(0, -18, 0, 18)
+      tube.addColorStop(0, '#6d6a64'); tube.addColorStop(.3, '#ffffff'); tube.addColorStop(.55, '#d6d3cd'); tube.addColorStop(1, '#5d5a55')
+      c.fillStyle = tube; c.beginPath(); c.roundRect(-30, -17, len + 30, 34, 17); c.fill()
+      c.shadowColor = 'transparent'
+      // counterweight
+      const cw = c.createLinearGradient(0, -40, 0, 40)
+      cw.addColorStop(0, '#5a5752'); cw.addColorStop(.35, '#f4f3f0'); cw.addColorStop(1, '#4b4844')
+      c.fillStyle = cw; c.beginPath(); c.roundRect(-140, -40, 100, 80, 14); c.fill()
+      c.restore()
+      // headshell
+      c.save(); c.translate(470, 1660); c.rotate(.55)
+      c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 18; c.shadowOffsetY = 10
+      const hs = c.createLinearGradient(-70, 0, 70, 0)
+      hs.addColorStop(0, '#9a978f'); hs.addColorStop(.4, '#ffffff'); hs.addColorStop(1, '#8c8982')
+      c.fillStyle = hs; c.beginPath(); c.roundRect(-70, -50, 140, 110, 12); c.fill()
+      c.shadowColor = 'transparent'
+      c.fillStyle = '#0e0e10'; c.beginPath(); c.roundRect(-60, 30, 120, 50, 8); c.fill()
+      c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(-56, 34, 112, 8)
+      c.fillStyle = metal(c, 0, 0, ['#fff', '#888', '#eee', '#777', '#fff'])
+      for (const x of [-30, 30]) { c.beginPath(); c.arc(x, -5, 12, 0, 7); c.fill() }
+      c.restore()
+      // cards with a watery pattern
+      DECK_CARDS.forEach(([x, y, r], i) => {
+        card(c, x, y, 560, 640, r, mix(t.base, '#fff', .25), 21 + i)
+        c.save(); c.translate(x, y); c.rotate(r)
+        c.beginPath(); c.rect(-280, -320, 560, 640); c.clip()
+        c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 3
+        const rr = rng(40 + i)
+        for (let k = 0; k < 26; k++) {
+          const yy = -320 + rr() * 640
+          c.beginPath()
+          for (let xx = -280; xx <= 280; xx += 20) c.lineTo(xx, yy + Math.sin(xx / 40 + k) * 10 + rr() * 4)
+          c.stroke()
+        }
+        c.restore()
+      })
+    },
+    front: (c, t, e) => DECK_CARDS.forEach(([x, y, r]) => gloss(c, x, y, 560, 640, r)),
+    a: [[1010, 1215, 230, 0]], b: [[150, 160, 170, -.2]],
+  },
+  {
+    id: 'film', name: 'Film strip', emoji: '🎥', count: 4, aspect: 4 / 3, W: 1080, H: 1920, color: 'rust', A: 'none', B: 'none',
+    slots: () => [-585, -195, 195, 585].map(ly => ({ ...at(FILM.x, FILM.y, FILM.rot, 0, ly), w: 470, h: 352, rot: FILM.rot })),
+    back: (c, t, e) => {
+      const paper = mix(t.base, '#fff', t.light ? .65 : .9)
+      bg(c, 1080, 1920, paper)
+      card(c, FILM.x, FILM.y, FILM.w, FILM.h, FILM.rot, t.base, 31)
+      c.save(); c.translate(FILM.x, FILM.y); c.rotate(FILM.rot)
+      c.beginPath(); c.rect(-FILM.w / 2, -FILM.h / 2, FILM.w, FILM.h); c.clip()
+      // grain + darker blotches like real film
+      const r = rng(99)
+      c.fillStyle = 'rgba(0,0,0,.12)'
+      for (let i = 0; i < 18; i++) { c.beginPath(); c.ellipse(-350 + r() * 700, -890 + r() * 1780, 60 + r() * 120, 30 + r() * 60, r() * 3, 0, 7); c.fill() }
+      // sprocket holes
+      c.fillStyle = paper
+      for (let y = -860; y < 880; y += 96) for (const x of [-300, 300]) { c.beginPath(); c.roundRect(x - 22, y, 44, 40, 8); c.fill() }
+      // little edge markings
+      c.fillStyle = 'rgba(255,240,230,.85)'; c.font = '700 30px "Courier New", monospace'; c.textAlign = 'center'; c.textBaseline = 'middle'
+      for (const [x, y, s] of [[-325, -160, '6'], [325, -140, '6'], [325, -700, '6A'], [-325, 640, '5'], [325, 630, '5'], [325, 260, '5A']]) {
+        c.save(); c.translate(x, y); c.rotate(-Math.PI / 2); c.fillText(s, 0, 0); c.restore()
+      }
+      c.strokeStyle = 'rgba(255,240,230,.85)'; c.lineWidth = 3
+      for (const y of [-610, 330]) { c.beginPath(); c.moveTo(315, y); c.lineTo(340, y + 40); c.lineTo(290, y + 40); c.closePath(); c.stroke() }
+      c.restore()
+    },
+    front: (c, t, e) => caption(c, e.caption, 540, 70, 84, t.light ? t.deep : t.dark),
+    a: [[930, 160, 170, .2]], b: [[190, 1810, 180, -.2]],
+  },
+  {
+    id: 'player', name: 'Now playing', emoji: '🎧', count: 1, aspect: 1, W: 1080, H: 1920, color: 'cherry', A: 'bow', B: 'none',
+    slots: () => [{ x: 540, y: 680, w: 670, h: 670, rot: 0, r: 36 }],
+    back: (c, t) => {
+      bg(c, 1080, 1920, mix(t.base, '#fff', t.light ? .6 : .9))
+      c.save()
+      c.shadowColor = 'rgba(0,0,0,.3)'; c.shadowBlur = 40; c.shadowOffsetY = 18
+      const g = c.createLinearGradient(0, 300, 0, 1600)
+      g.addColorStop(0, t.base); g.addColorStop(1, t.dark)
+      c.fillStyle = g; c.beginPath(); c.roundRect(160, 300, 760, 1300, 70); c.fill()
+      c.restore()
+    },
+    front: (c, t, e) => {
+      const ink = t.light ? t.deep : '#ffffff', faint = t.light ? 'rgba(0,0,0,.25)' : 'rgba(255,255,255,.35)'
+      c.textAlign = 'left'; c.textBaseline = 'middle'
+      c.fillStyle = ink; c.font = '800 50px Nunito, sans-serif'
+      c.fillText(e.caption || 'untitled', 205, 1090, 560)
+      c.globalAlpha = .7; c.font = '600 36px Nunito, sans-serif'
+      c.fillText(e.sub || 'cherry booth', 205, 1145, 560)
+      c.globalAlpha = 1
+      // cast icon
+      c.strokeStyle = ink; c.lineWidth = 4
+      for (const r of [14, 26]) { c.beginPath(); c.arc(840, 1112, r, Math.PI * 1.15, Math.PI * 1.85); c.stroke() }
+      c.fillStyle = ink; c.beginPath(); c.moveTo(828, 1132); c.lineTo(852, 1132); c.lineTo(840, 1116); c.fill()
+      // progress
+      c.fillStyle = faint; c.fillRect(205, 1228, 670, 6)
+      c.fillStyle = ink; c.fillRect(205, 1228, 400, 6)
+      c.beginPath(); c.arc(605, 1231, 12, 0, 7); c.fill()
+      c.font = '600 32px Nunito, sans-serif'; c.globalAlpha = .75
+      c.fillText('1:53', 205, 1280); c.textAlign = 'right'; c.fillText('-1:20', 875, 1280)
+      c.globalAlpha = 1
+      // prev / pause / next
+      const tri = (x, d) => { c.beginPath(); c.moveTo(x, 1385); c.lineTo(x - d * 46, 1355); c.lineTo(x - d * 46, 1415); c.fill() } // d = which way it points
+      tri(330, -1); tri(370, -1); tri(750, 1); tri(710, 1)
+      c.fillRect(512, 1350, 20, 72); c.fillRect(550, 1350, 20, 72)
+      // volume
+      c.fillStyle = faint; c.fillRect(260, 1497, 540, 6)
+      c.fillStyle = ink; c.fillRect(260, 1497, 470, 6)
+      c.beginPath(); c.arc(730, 1500, 22, 0, 7); c.fill()
+      c.beginPath(); c.moveTo(208, 1490); c.lineTo(218, 1490); c.lineTo(232, 1478); c.lineTo(232, 1522); c.lineTo(218, 1510); c.lineTo(208, 1510); c.fill()
+      c.beginPath(); c.moveTo(822, 1490); c.lineTo(832, 1490); c.lineTo(846, 1478); c.lineTo(846, 1522); c.lineTo(832, 1510); c.lineTo(822, 1510); c.fill()
+      c.strokeStyle = ink; c.lineWidth = 4
+      for (const r of [14, 24]) { c.beginPath(); c.arc(848, 1500, r, -.7, .7); c.stroke() }
+    },
+    a: [[900, 310, 220, .2]], b: [[170, 1590, 190, -.2]],
+  },
+]
+
+// ---------- state ----------
+let tplId = 'classic', facing = 'user', stream = null, liveFilter = 'none', busy = false
+let shots = [], processed = []
+const edit = { filter: 'none', adj: {}, color: 'paper', A: 'tape', B: 'none', stickers: [], caption: '', sub: '', date: true, sel: -1 }
+const tpl = () => TEMPLATES.find(t => t.id == tplId)
+
+// ---------- camera ----------
+async function startCam() {
+  try {
+    if (stream) stream.getTracks().forEach(t => t.stop())
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false })
+    const v = $('video')
+    v.muted = true
+    v.setAttribute('playsinline', '')
+    v.srcObject = stream
+    // iphones wont always autoplay, so kick it manually
+    try { await v.play() } catch (e) {}
+    v.classList.toggle('mirror', facing == 'user')
+    $('camMsg').hidden = true
+    if (!(await camReady())) {
+      $('camMsg').hidden = false
+      $('camMsg').textContent = 'Your camera is on but not sending a picture yet. Tap the camera button again, or tap 🖼️ to upload a photo.'
+    }
+    return true
+  } catch (e) {
+    $('camMsg').hidden = false
+    $('camMsg').textContent = 'The camera is blocked here. Allow camera access in your browser, or tap 🖼️ to upload photos instead.'
+    return false
+  }
+}
+$('flip').onclick = () => { facing = facing == 'user' ? 'environment' : 'user'; startCam() }
+
+function setTemplate(id) {
+  tplId = id
+  const T = tpl()
+  document.querySelectorAll('.tpl').forEach(b => b.classList.toggle('on', b.dataset.id == id))
+  $('booth').style.setProperty('--aspect', T.aspect)
+  $('booth').classList.toggle('multi', T.count > 1)
+  $('shots').hidden = T.count < 2
+  $('file').multiple = T.count > 1
+  $('tip').textContent = T.count > 1
+    ? `${T.name} takes ${T.count} photos with a countdown between each. Uploading? Pick up to ${T.count}.`
+    : `${T.name} takes 1 photo. You can change colours and decorations after.`
+  shots = []
+  drawShotSlots()
+}
+TEMPLATES.forEach(T => {
+  const b = document.createElement('button')
+  b.className = 'tpl'
+  b.dataset.id = T.id
+  b.innerHTML = `<span>${T.emoji}</span>${T.name}<small>${T.count} photo${T.count > 1 ? 's' : ''}</small>`
+  b.onclick = () => setTemplate(T.id)
+  $('tpls').append(b)
+})
+
+function drawShotSlots() {
+  $('shots').innerHTML = ''
+  for (let i = 0; i < tpl().count; i++) {
+    const s = document.createElement('i')
+    if (shots[i]) s.style.backgroundImage = `url(${shots[i].toDataURL('image/jpeg', .6)})`
+    $('shots').append(s)
+  }
+}
+
+FILTERS.forEach(f => {
+  const b = document.createElement('button')
+  b.className = 'chip' + (f.id == 'none' ? ' on' : '')
+  b.innerHTML = `<b style="background:${f.dot}"></b>${f.name}`
+  b.onclick = () => {
+    liveFilter = f.id
+    $('video').style.filter = f.css
+    document.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c == b))
+  }
+  $('chips').append(b)
+})
+
+// ---------- sound ----------
+let ac
+function shutterSound() {
+  try {
+    if (!ac) ac = new AudioContext()
+    const len = ac.sampleRate * 0.12, buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0)
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 2
+    const s = ac.createBufferSource(), g = ac.createGain()
+    s.buffer = buf; g.gain.value = 0.35
+    s.connect(g).connect(ac.destination); s.start()
+  } catch (e) {}
+}
+function beep(f) {
+  try {
+    if (!ac) ac = new AudioContext()
+    const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime
+    o.frequency.value = f; g.gain.setValueAtTime(.06, t); g.gain.exponentialRampToValueAtTime(.001, t + .12)
+    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .12)
+  } catch (e) {}
+}
+
+// ---------- capture ----------
+const wait = ms => new Promise(r => setTimeout(r, ms))
+async function countdown(n) {
+  for (let i = n; i > 0; i--) { $('count').textContent = i; beep(660); await wait(800) }
+  $('count').textContent = ''
+}
+// crop the middle of an image/video to the template's photo shape
+function cropTo(src, sw0, sh0, mirror) {
+  const aspect = tpl().aspect, out = document.createElement('canvas')
+  out.width = 1000
+  out.height = Math.round(1000 / aspect)
+  let sw = sw0, sh = sw0 / aspect
+  if (sh > sh0) { sh = sh0; sw = sh0 * aspect }
+  const c = out.getContext('2d')
+  if (mirror) { c.translate(out.width, 0); c.scale(-1, 1) }
+  c.drawImage(src, (sw0 - sw) / 2, (sh0 - sh) / 2, sw, sh, 0, 0, out.width, out.height)
+  return out
+}
+// wait until the camera is actually sending frames (this was the black photo bug)
+async function camReady(ms = 3000) {
+  const v = $('video'), t0 = performance.now()
+  while ((!v.videoWidth || v.readyState < 2) && performance.now() - t0 < ms) await new Promise(r => setTimeout(r, 100))
+  return v.videoWidth > 0
+}
+const camDead = () => !stream || !stream.getVideoTracks()[0] || stream.getVideoTracks()[0].readyState == 'ended'
+// phones stop the camera when you switch apps or lock the screen, so restart it when you come back
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && stream && camDead()) startCam()
+})
+function isBlack(cv) {
+  const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data
+  let sum = 0, n = 0
+  for (let i = 0; i < d.length; i += 4 * 997) { sum += d[i] + d[i + 1] + d[i + 2]; n++ }
+  return sum / n < 6
+}
+async function grab() {
+  const v = $('video')
+  if (!(await camReady())) return null
+  let out
+  // the first frames on some phones come out black, so try again a few times
+  for (let tries = 0; tries < 5; tries++) {
+    out = cropTo(v, v.videoWidth, v.videoHeight, facing == 'user')
+    if (!isBlack(out)) break
+    await new Promise(r => setTimeout(r, 250))
+  }
+  $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go')
+  shutterSound()
+  try { navigator.vibrate && navigator.vibrate(30) } catch (e) {}
+  return out
+}
+
+$('shutter').onclick = async () => {
+  if (busy) return
+  if (camDead()) { if (!(await startCam())) return; await wait(400); return }
+  busy = true
+  shots = []
+  drawShotSlots()
+  for (let i = 0; i < tpl().count; i++) {
+    await countdown(i == 0 ? 3 : 2)
+    const shot = await grab()
+    if (!shot) {
+      busy = false
+      toast('Your camera isn’t sending a picture. Try 🔄, reload the page, or upload with 🖼️')
+      return
+    }
+    shots.push(shot)
+    drawShotSlots()
+    await wait(350)
+  }
+  busy = false
+  openEditor(liveFilter)
+}
+
+$('upload').onclick = () => $('file').click()
+$('file').onchange = async () => {
+  const n = tpl().count, files = [...$('file').files].slice(0, n)
+  if (!files.length) return
+  shots = []
+  for (const f of files) shots.push(await fileToCanvas(f))
+  // not enough photos picked? reuse them
+  for (let i = 0; shots.length < n; i++) shots.push(shots[i])
+  $('file').value = ''
+  openEditor(liveFilter)
+}
+function fileToCanvas(file) {
+  return new Promise((res, rej) => {
+    const img = new Image()
+    img.onload = () => { res(cropTo(img, img.width, img.height, false)); URL.revokeObjectURL(img.src) }
+    img.onerror = rej
+    img.src = URL.createObjectURL(file)
+  })
+}
+
+// ---------- the pixel filter pass ----------
+function applyFilter(src) {
+  const f = FILTERS.find(x => x.id == edit.filter).p, a = edit.adj
+  const bright = (f.bright || 0) + (a.bright || 0) / 100
+  const contrast = (f.contrast || 1) * (1 + (a.contrast || 0) / 100)
+  const sat = (f.sat ?? 1) * (1 + (a.sat || 0) / 100)
+  const warm = (f.warm || 0) + (a.warm || 0) / 100
+  const fade = clamp((f.fade || 0) + (a.fade || 0) / 100, 0, 1)
+  const grain = (f.grain || 0) + (a.grain || 0) / 100
+  const vig = f.vig || 0, tint = f.tint || [0, 0, 0], split = f.split
+
+  const out = document.createElement('canvas')
+  out.width = src.width; out.height = src.height
+  const c = out.getContext('2d')
+  c.drawImage(src, 0, 0)
+  const im = c.getImageData(0, 0, out.width, out.height), d = im.data
+  const w = out.width, h = out.height, cx = w / 2, cy = h / 2, maxD = Math.hypot(cx, cy)
+  for (let i = 0; i < d.length; i += 4) {
+    let r = d[i], g = d[i + 1], b = d[i + 2]
+    r += bright * 255; g += bright * 255; b += bright * 255
+    r = (r - 128) * contrast + 128; g = (g - 128) * contrast + 128; b = (b - 128) * contrast + 128
+    const l = r * .3 + g * .59 + b * .11
+    r = l + (r - l) * sat; g = l + (g - l) * sat; b = l + (b - l) * sat
+    r += warm * 22 + tint[0]; g += warm * 6 + tint[1]; b += -warm * 22 + tint[2]
+    if (split) {
+      // shadows one colour, highlights another
+      const k = clamp(l / 255, 0, 1)
+      r += split[0][0] * (1 - k) + split[1][0] * k
+      g += split[0][1] * (1 - k) + split[1][1] * k
+      b += split[0][2] * (1 - k) + split[1][2] * k
+    }
+    if (fade) { r = r * (1 - fade * .25) + fade * 40; g = g * (1 - fade * .25) + fade * 36; b = b * (1 - fade * .25) + fade * 44 }
+    if (vig) {
+      const p = i / 4, x = p % w, y = (p / w) | 0
+      const k = 1 - vig * Math.max(0, Math.hypot(x - cx, y - cy) / maxD - .35) * 1.6
+      r *= k; g *= k; b *= k
+    }
+    if (grain) { const n = (Math.random() - .5) * grain * 60; r += n; g += n; b += n }
+    d[i] = r; d[i + 1] = g; d[i + 2] = b
+  }
+  c.putImageData(im, 0, 0)
+  return out
+}
+let filterTimer
+function reprocess() {
+  clearTimeout(filterTimer)
+  filterTimer = setTimeout(() => { processed = shots.map(applyFilter); compose() }, 40)
+}
+
+// ---------- putting it all together ----------
+const out = $('out'), octx = out.getContext('2d')
+function dateText() {
+  const d = new Date()
+  return `'${String(d.getFullYear()).slice(2)} ${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getDate()).padStart(2, '0')}`
+}
+function compose() {
+  const T = tpl(), th = theme(edit.color)
+  out.width = T.W; out.height = T.H
+  octx.save()
+  T.back(octx, th, edit)
+  octx.restore()
+  T.slots().forEach((s, i) => {
+    const img = processed[i] || shots[i]
+    if (!img) return
+    octx.save()
+    octx.translate(s.x, s.y); octx.rotate(s.rot)
+    octx.beginPath()
+    if (s.r) octx.roundRect(-s.w / 2, -s.h / 2, s.w, s.h, s.r); else octx.rect(-s.w / 2, -s.h / 2, s.w, s.h)
+    octx.clip()
+    octx.drawImage(img, -s.w / 2, -s.h / 2, s.w, s.h)
+    if (edit.date) {
+      // orange disposable camera date
+      octx.font = `bold ${Math.round(s.w * .06)}px "Courier New", monospace`
+      octx.textAlign = 'right'; octx.textBaseline = 'bottom'
+      octx.shadowColor = 'rgba(255,120,30,.9)'; octx.shadowBlur = 8
+      octx.fillStyle = '#ffa23a'
+      octx.fillText(dateText(), s.w / 2 - s.w * .04, s.h / 2 - s.w * .03)
+    }
+    octx.restore()
+  })
+  octx.save()
+  T.front && T.front(octx, th, edit)
+  octx.restore()
+  edit.stickers.forEach((s, i) => {
+    octx.save(); octx.translate(s.x, s.y); octx.rotate(s.rot)
+    if (s.kind == 'decor') drawDecor(octx, s.type, 0, 0, s.size, 0, s.color ? theme(s.color) : th)
+    else if (s.kind == 'img') {
+      const img = myImgs[s.id]
+      if (img && img.complete) { const h = s.size * img.height / img.width; octx.drawImage(img, -s.size / 2, -h / 2, s.size, h) }
+    } else {
+      octx.font = `${s.size}px serif`
+      octx.textAlign = 'center'; octx.textBaseline = 'middle'
+      octx.fillText(s.emo, 0, 0)
+    }
+    if (i == edit.sel) {
+      octx.strokeStyle = '#c8243f'; octx.lineWidth = 4; octx.setLineDash([12, 8])
+      octx.strokeRect(-s.size * .6, -s.size * .6, s.size * 1.2, s.size * 1.2)
+    }
+    octx.restore()
+  })
+}
+
+// ---------- editor ui ----------
+function openEditor(filterId) {
+  const T = tpl()
+  Object.assign(edit, { filter: filterId, adj: {}, stickers: [], sel: -1, caption: '', sub: '', color: T.color })
+  for (const [type, list] of [[T.A, T.a], [T.B, T.b]]) {
+    const info = DECOR.find(d => d.id == type)
+    if (!info || type == 'none') continue
+    ;(info.single ? list.slice(0, 1) : list).forEach(([x, y, s, r]) => edit.stickers.push({ kind: 'decor', type, x, y, size: info.single ? s * 1.3 : s, rot: r }))
+  }
+  $('caption').value = ''; $('sub').value = ''
+  buildEditorLists()
+  show('edit')
+  document.fonts.load('80px Caveat').finally(() => reprocess())
+}
+
+// tiny previews of each decoration in the current colour
+function decorThumb(type) {
+  const c = document.createElement('canvas')
+  c.width = c.height = 96
+  const x = c.getContext('2d')
+  if (type == 'none') {
+    x.strokeStyle = '#c9b2b8'; x.lineWidth = 6
+    x.beginPath(); x.arc(48, 48, 26, 0, 7); x.moveTo(30, 66); x.lineTo(66, 30); x.stroke()
+  } else drawDecor(x, type, 48, 50, 76, 0, theme(edit.color))
+  return c.toDataURL()
+}
+
+function buildEditorLists() {
+  const fill = (id, items, isOn, onPick, look) => {
+    $(id).innerHTML = ''
+    items.forEach(it => {
+      const b = document.createElement('button')
+      b.className = 'sw' + (isOn(it) ? ' on' : '')
+      b.innerHTML = `<i></i>${it.name}`
+      look(b.querySelector('i'), it)
+      b.onclick = () => { onPick(it); buildEditorLists() }
+      $(id).append(b)
+    })
+  }
+  fill('filterList', FILTERS, f => f.id == edit.filter, f => { edit.filter = f.id; reprocess() }, (i, f) => i.style.background = f.dot)
+  fill('colorList', COLORS, c => c.id == edit.color, c => { edit.color = c.id; compose() }, (i, c) => { i.style.background = c.base; i.style.borderRadius = '50%' })
+  mainWheel.set(theme(edit.color).base)
+  fill('elList', DECOR.filter(d => d.id != 'none'), () => false, d => addItem({ kind: 'decor', type: d.id, size: tpl().W > 900 ? 220 : 160 }), (i, d) => i.style.backgroundImage = `url(${decorThumb(d.id)})`)
+  renderMine()
+  $('subRow').hidden = !['digicam', 'player', 'deck'].includes(tplId)
+  $('sub').placeholder = { digicam: 'name on the camera', player: 'artist or a little note', deck: 'label on the record' }[tplId] || ''
+  $('sliders').innerHTML = ''
+  ADJUST.forEach(a => {
+    const row = document.createElement('label')
+    row.className = 'slider'
+    row.innerHTML = `<span>${a.name}</span><input type="range" min="${a.min}" max="${a.max}" value="${edit.adj[a.id] || 0}"><output>${edit.adj[a.id] || 0}</output>`
+    const input = row.querySelector('input')
+    input.oninput = () => { edit.adj[a.id] = +input.value; row.querySelector('output').textContent = input.value; reprocess() }
+    $('sliders').append(row)
+  })
+}
+$('resetAdj').onclick = () => { edit.adj = {}; buildEditorLists(); reprocess() }
+
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x == b))
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id == 'p-' + b.dataset.pane))
+})
+
+STICKERS.forEach(e => {
+  const b = document.createElement('button')
+  b.textContent = e
+  b.setAttribute('aria-label', 'Add sticker ' + e)
+  b.onclick = () => {
+    addItem({ kind: 'emoji', emo: e, size: tpl().W > 900 ? 150 : 110 })
+  }
+  $('stickerList').append(b)
+})
+function addItem(item) {
+  const T = tpl()
+  edit.stickers.push({ x: T.W * (.25 + Math.random() * .5), y: T.H * (.2 + Math.random() * .5), rot: (Math.random() - .5) * .4, ...item })
+  selectSticker(edit.stickers.length - 1)
+  compose()
+}
+// ---------- colour wheel ----------
+const toHex = rgbArr => '#' + rgbArr.map(v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join('')
+function hsv2rgb(h, s, v) {
+  const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)) }
+  return [f(5) * 255, f(3) * 255, f(1) * 255]
+}
+function rgb2hsv([r, g, b]) {
+  r /= 255; g /= 255; b /= 255
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn
+  let h = 0
+  if (d) h = mx == r ? ((g - b) / d) % 6 : mx == g ? (b - r) / d + 2 : (r - g) / d + 4
+  return [(h * 60 + 360) % 360, mx ? d / mx : 0, mx]
+}
+function makeWheel(box, size, onPick) {
+  box.innerHTML = `<div class="wheel"><div class="disc"><canvas width="${size * 2}" height="${size * 2}" style="width:${size}px;height:${size}px" aria-label="Colour wheel"></canvas><span class="knob"></span></div>
+    <div class="wv"><label>Brightness<input type="range" min="8" max="100" value="100"></label>
+    <div class="hexrow"><input class="hex" maxlength="7" aria-label="Hex colour code"><i class="prev"></i></div></div></div>`
+  const cv = box.querySelector('canvas'), knob = box.querySelector('.knob'), bright = box.querySelector('input[type=range]'), hex = box.querySelector('.hex'), prev = box.querySelector('.prev')
+  // paint the disc once: hue goes around, saturation goes outwards
+  const S = size * 2, c = cv.getContext('2d'), im = c.createImageData(S, S)
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const dx = x - S / 2, dy = y - S / 2, d = Math.hypot(dx, dy) / (S / 2), i = (y * S + x) * 4
+    if (d > 1) continue
+    const [r, g, b] = hsv2rgb((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360, d, 1)
+    im.data[i] = r; im.data[i + 1] = g; im.data[i + 2] = b; im.data[i + 3] = d > .985 ? (1 - d) / .015 * 255 : 255
+  }
+  c.putImageData(im, 0, 0)
+  const st = { h: 0, s: 0, v: 1 }
+  function paint() {
+    const a = st.h * Math.PI / 180
+    knob.style.left = size / 2 + Math.cos(a) * st.s * size / 2 + 'px'
+    knob.style.top = size / 2 + Math.sin(a) * st.s * size / 2 + 'px'
+    const col = toHex(hsv2rgb(st.h, st.s, st.v))
+    knob.style.background = col; prev.style.background = col
+    if (document.activeElement != hex) hex.value = col
+    cv.style.filter = `brightness(${Math.max(st.v, .25)})`
+    bright.value = Math.round(st.v * 100)
+    return col
+  }
+  function fromPointer(e) {
+    const r = cv.getBoundingClientRect(), dx = e.clientX - r.left - size / 2, dy = e.clientY - r.top - size / 2
+    st.h = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360
+    st.s = Math.min(1, Math.hypot(dx, dy) / (size / 2))
+    onPick(paint())
+  }
+  let dragging = false
+  cv.addEventListener('pointerdown', e => { dragging = true; cv.setPointerCapture(e.pointerId); fromPointer(e) })
+  cv.addEventListener('pointermove', e => { if (dragging) fromPointer(e) })
+  cv.addEventListener('pointerup', () => dragging = false)
+  bright.oninput = () => { st.v = bright.value / 100; onPick(paint()) }
+  hex.oninput = () => {
+    const v = hex.value.trim()
+    if (/^#?[0-9a-f]{6}$/i.test(v)) { api.set(v.startsWith('#') ? v : '#' + v); onPick(toHex(hsv2rgb(st.h, st.s, st.v))) }
+  }
+  const api = { set(col) { [st.h, st.s, st.v] = rgb2hsv(rgb(col)); paint() } }
+  return api
+}
+// whole layout colour
+let pickT
+const mainWheel = makeWheel($('wheelMain'), 150, col => {
+  edit.color = col
+  compose()
+  document.querySelectorAll('#colorList .sw').forEach(b => b.classList.remove('on'))
+  clearTimeout(pickT)
+  pickT = setTimeout(() => { if (document.querySelector('#p-elements.on')) buildEditorLists() }, 300) // refresh element previews
+})
+// one element's own colour
+const elWheel = makeWheel($('wheelEl'), 120, col => {
+  const s = edit.stickers[edit.sel]
+  if (s && s.kind == 'decor') { s.color = col; compose() }
+})
+$('elMatch').onclick = () => {
+  const s = edit.stickers[edit.sel]
+  if (s) { delete s.color; elWheel.set(theme(edit.color).base); compose() }
+}
+
+function selectSticker(i) {
+  edit.sel = i
+  $('selBar').hidden = i < 0
+  const s = edit.stickers[i]
+  $('elColor').hidden = !s || s.kind != 'decor'
+  if (s && s.kind == 'decor') elWheel.set(s.color || theme(edit.color).base)
+  if (i >= 0) syncSize()
+}
+function syncSize() {
+  if (edit.sel < 0) return
+  const s = edit.stickers[edit.sel], v = Math.round(s.size), deg = Math.round(((s.rot * 180 / Math.PI + 540) % 360) - 180)
+  $('stickerSize').querySelector('input').value = v
+  $('stickerSize').querySelector('output').textContent = v
+  $('stickerRot').querySelector('input').value = deg
+  $('stickerRot').querySelector('output').textContent = deg + '°'
+}
+$('stickerSize').querySelector('input').oninput = e => {
+  if (edit.sel < 0) return
+  edit.stickers[edit.sel].size = +e.target.value
+  syncSize(); compose()
+}
+$('stickerRot').querySelector('input').oninput = e => {
+  if (edit.sel < 0) return
+  edit.stickers[edit.sel].rot = +e.target.value * Math.PI / 180
+  syncSize(); compose()
+}
+$('delSticker').onclick = () => { if (edit.sel >= 0) { edit.stickers.splice(edit.sel, 1); selectSticker(-1); compose() } }
+$('dupSticker').onclick = () => {
+  if (edit.sel < 0) return
+  const s = edit.stickers[edit.sel]
+  edit.stickers.push({ ...s, x: s.x + 40, y: s.y + 40 })
+  selectSticker(edit.stickers.length - 1); compose()
+}
+$('frontSticker').onclick = () => {
+  if (edit.sel < 0) return
+  edit.stickers.push(edit.stickers.splice(edit.sel, 1)[0])
+  selectSticker(edit.stickers.length - 1); compose()
+}
+$('clearStickers').onclick = () => { if (confirm('Remove all elements and stickers?')) { edit.stickers = []; selectSticker(-1); compose() } }
+
+// ---------- your own elements (saved in the browser) ----------
+const myImgs = {}
+let myItems = []
+async function loadMine() {
+  try { myItems = (await store('readonly', s => s.getAll(), 'elements')).sort((a, b) => a.created - b.created) } catch (e) { myItems = [] }
+  for (const m of myItems) if (!myImgs[m.id]) { const img = new Image(); img.onload = () => compose(); img.src = URL.createObjectURL(m.blob); myImgs[m.id] = img }
+  renderMine()
+}
+function renderMine() {
+  const box = $('myList')
+  box.innerHTML = ''
+  const add = document.createElement('button')
+  add.className = 'sw add'
+  add.innerHTML = '<i>＋</i>Upload'
+  add.onclick = () => $('myFile').click()
+  box.append(add)
+  for (const m of myItems) {
+    const w = document.createElement('div')
+    w.className = 'my'
+    w.innerHTML = `<button class="sw"><i style="background-image:url(${myImgs[m.id] ? myImgs[m.id].src : ''})"></i>${m.name}</button><button class="x" aria-label="Delete ${m.name}">×</button><button class="cut" aria-label="Remove background from ${m.name}">✂️</button>`
+    w.querySelector('.cut').onclick = async () => {
+      const blob = await cleanUp(m.blob)
+      if (!blob) return
+      await store('readwrite', s => s.put({ ...m, blob }), 'elements')
+      URL.revokeObjectURL(myImgs[m.id].src); delete myImgs[m.id]
+      await loadMine(); compose()
+    }
+    w.querySelector('.sw').onclick = () => addItem({ kind: 'img', id: m.id, size: tpl().W > 900 ? 300 : 200 })
+    w.querySelector('.x').onclick = async () => {
+      if (!confirm('Delete this element from your saved ones?')) return
+      await store('readwrite', s => s.delete(m.id), 'elements')
+      edit.stickers = edit.stickers.filter(s => s.id != m.id)
+      selectSticker(-1); await loadMine(); compose()
+    }
+    box.append(w)
+  }
+}
+$('myFile').onchange = async () => {
+  for (const f of [...$('myFile').files]) {
+    const blob = await cleanUp(await shrink(f), true)
+    if (!blob) continue
+    const id = 'el-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6)
+    try { await store('readwrite', s => s.put({ id, created: Date.now(), name: f.name.replace(/\.[^.]+$/, '').slice(0, 12) || 'mine', blob }), 'elements') }
+    catch (e) { toast('Couldn’t save that one. Storage might be full.') }
+  }
+  $('myFile').value = ''
+  await loadMine()
+  const last = myItems[myItems.length - 1]
+  if (last) addItem({ kind: 'img', id: last.id, size: tpl().W > 900 ? 300 : 200 })
+  toast('Added to your elements ✨')
+}
+// ---------- background remover ----------
+// no ai here: it flood-fills from the edges (or where you tap) and makes similar colours see-through.
+// works great on plain/solid backgrounds, which is most sticker-style pics
+let cut = null
+function cleanUp(blob, isNew) {
+  return new Promise(resolve => {
+    const img = new Image()
+    img.onload = () => {
+      const cv = $('bgCanvas'), c = cv.getContext('2d', { willReadFrequently: true })
+      cv.width = img.width; cv.height = img.height
+      c.clearRect(0, 0, cv.width, cv.height)
+      c.drawImage(img, 0, 0)
+      URL.revokeObjectURL(img.src)
+      cut = { c, cv, history: [], resolve }
+      $('bgSkip').textContent = isNew ? 'Keep original' : 'Cancel'
+      $('bgTool').hidden = false
+    }
+    img.onerror = () => resolve(blob)
+    img.src = URL.createObjectURL(blob)
+  })
+}
+function finishBg(result) {
+  $('bgTool').hidden = true
+  const r = cut.resolve; cut = null
+  r(result)
+}
+const colorDist = (d, i, ref) => Math.abs(d[i] - ref[0]) + Math.abs(d[i + 1] - ref[1]) + Math.abs(d[i + 2] - ref[2])
+
+function eraseFrom(seeds, ref) {
+  const { c, cv } = cut, w = cv.width, h = cv.height
+  const im = c.getImageData(0, 0, w, h), d = im.data
+  cut.history.push(c.getImageData(0, 0, w, h))
+  if (cut.history.length > 15) cut.history.shift()
+  const tol = +$('bgTol').value * 3, seen = new Uint8Array(w * h), stack = []
+  for (const p of seeds) if (!seen[p]) { seen[p] = 1; stack.push(p) }
+  while (stack.length) {
+    const p = stack.pop(), i = p * 4
+    if (d[i + 3] == 0 || colorDist(d, i, ref) > tol) continue
+    d[i + 3] = 0
+    const x = p % w, y = (p / w) | 0
+    if (x > 0 && !seen[p - 1]) { seen[p - 1] = 1; stack.push(p - 1) }
+    if (x < w - 1 && !seen[p + 1]) { seen[p + 1] = 1; stack.push(p + 1) }
+    if (y > 0 && !seen[p - w]) { seen[p - w] = 1; stack.push(p - w) }
+    if (y < h - 1 && !seen[p + w]) { seen[p + w] = 1; stack.push(p + w) }
+  }
+  // soften the cut edge a little so it doesnt look jagged
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    const p = y * w + x, i = p * 4
+    if (d[i + 3] && (!d[i - 1] || !d[i + 7] || !d[(p - w) * 4 + 3] || !d[(p + w) * 4 + 3])) d[i + 3] = Math.min(d[i + 3], 150)
+  }
+  c.putImageData(im, 0, 0)
+}
+
+$('bgTol').oninput = e => $('bgTolOut').textContent = e.target.value
+$('bgAuto').onclick = () => {
+  if (!cut) return
+  const { c, cv } = cut, w = cv.width, h = cv.height, d = c.getImageData(0, 0, w, h).data
+  // the background colour = average of the border pixels
+  const edge = []
+  for (let x = 0; x < w; x++) edge.push(x, (h - 1) * w + x)
+  for (let y = 0; y < h; y++) edge.push(y * w, y * w + w - 1)
+  const ref = [0, 0, 0]; let n = 0
+  for (const p of edge) { const i = p * 4; if (!d[i + 3]) continue; ref[0] += d[i]; ref[1] += d[i + 1]; ref[2] += d[i + 2]; n++ }
+  if (!n) return toast('Already see-through ✨')
+  eraseFrom(edge, ref.map(v => v / n))
+}
+$('bgCanvas').addEventListener('pointerdown', e => {
+  if (!cut) return
+  const r = cut.cv.getBoundingClientRect()
+  const x = Math.floor((e.clientX - r.left) * cut.cv.width / r.width), y = Math.floor((e.clientY - r.top) * cut.cv.height / r.height)
+  const d = cut.c.getImageData(x, y, 1, 1).data
+  if (!d[3]) return
+  eraseFrom([y * cut.cv.width + x], [d[0], d[1], d[2]])
+})
+$('bgUndo').onclick = () => { if (cut && cut.history.length) cut.c.putImageData(cut.history.pop(), 0, 0) }
+$('bgSkip').onclick = async () => {
+  if (!cut) return
+  if ($('bgSkip').textContent == 'Cancel') return finishBg(null)
+  while (cut.history.length > 1) cut.history.pop()
+  if (cut.history.length) cut.c.putImageData(cut.history.pop(), 0, 0)
+  finishBg(await new Promise(r => cut.cv.toBlob(r, 'image/png')))
+}
+$('bgDone').onclick = async () => { if (cut) finishBg(await new Promise(r => cut.cv.toBlob(r, 'image/png'))) }
+
+// keep uploads small, but keep the see-through parts
+function shrink(file) {
+  return new Promise(res => {
+    const img = new Image()
+    img.onload = () => {
+      const k = Math.min(1, 800 / Math.max(img.width, img.height))
+      const c = document.createElement('canvas')
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k)
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height)
+      URL.revokeObjectURL(img.src)
+      c.toBlob(b => res(b || file), 'image/png')
+    }
+    img.onerror = () => res(file)
+    img.src = URL.createObjectURL(file)
+  })
+}
+
+$('caption').oninput = e => { edit.caption = e.target.value; compose() }
+$('sub').oninput = e => { edit.sub = e.target.value; compose() }
+$('dateOn').onchange = e => { edit.date = e.target.checked; compose() }
+
+// dragging stickers around, pinch to resize + spin on phones
+let drag = null, pinch = null
+const fingers = new Map()
+function toCanvas(e) {
+  const r = out.getBoundingClientRect()
+  return { x: (e.clientX - r.left) * out.width / r.width, y: (e.clientY - r.top) * out.height / r.height }
+}
+out.addEventListener('pointerdown', e => {
+  fingers.set(e.pointerId, toCanvas(e))
+  out.setPointerCapture(e.pointerId)
+  if (fingers.size == 2 && edit.sel >= 0) {
+    const [a, b] = [...fingers.values()], s = edit.stickers[edit.sel]
+    pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, ang: Math.atan2(b.y - a.y, b.x - a.x), size: s.size, rot: s.rot }
+    drag = null
+    return
+  }
+  if (fingers.size > 1) return
+  const p = toCanvas(e)
+  for (let i = edit.stickers.length - 1; i >= 0; i--) {
+    const s = edit.stickers[i]
+    if (Math.abs(p.x - s.x) < s.size * .6 && Math.abs(p.y - s.y) < s.size * .6) {
+      drag = { i, dx: p.x - s.x, dy: p.y - s.y }
+      selectSticker(i)
+      compose()
+      return
+    }
+  }
+  selectSticker(-1); compose()
+})
+out.addEventListener('pointermove', e => {
+  if (!fingers.has(e.pointerId)) return
+  fingers.set(e.pointerId, toCanvas(e))
+  if (pinch && fingers.size == 2 && edit.sel >= 0) {
+    const [a, b] = [...fingers.values()], s = edit.stickers[edit.sel]
+    s.size = clamp(pinch.size * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d, 40, 420)
+    s.rot = pinch.rot + Math.atan2(b.y - a.y, b.x - a.x) - pinch.ang
+    syncSize()
+    compose()
+    return
+  }
+  if (!drag) return
+  const p = toCanvas(e), s = edit.stickers[drag.i]
+  s.x = clamp(p.x - drag.dx, 0, out.width); s.y = clamp(p.y - drag.dy, 0, out.height)
+  compose()
+})
+const lift = e => {
+  fingers.delete(e.pointerId)
+  if (fingers.size < 2) pinch = null
+  if (!fingers.size) drag = null
+}
+out.addEventListener('pointerup', lift)
+out.addEventListener('pointercancel', lift)
+
+$('retake').onclick = () => { shots = []; processed = []; drawShotSlots(); show('booth') }
+
+// ---------- gallery (indexeddb) ----------
+let dbp
+function db() {
+  if (!dbp) dbp = new Promise((res, rej) => {
+    const r = indexedDB.open('cherry-booth', 2)
+    r.onupgradeneeded = () => {
+      for (const name of ['photos', 'elements']) if (!r.result.objectStoreNames.contains(name)) r.result.createObjectStore(name, { keyPath: 'id' })
+    }
+    r.onsuccess = () => res(r.result)
+    r.onerror = () => rej(r.error)
+  })
+  return dbp
+}
+async function store(mode, fn, name = 'photos') {
+  const d = await db()
+  return new Promise((res, rej) => {
+    const tx = d.transaction(name, mode), req = fn(tx.objectStore(name))
+    tx.oncomplete = () => res(req && req.result)
+    tx.onerror = () => rej(tx.error)
+  })
+}
+const allPhotos = () => store('readonly', s => s.getAll())
+const putPhoto = p => store('readwrite', s => s.put(p))
+const delPhoto = id => store('readwrite', s => s.delete(id))
+
+$('save').onclick = async () => {
+  const prevSel = edit.sel
+  selectSticker(-1); compose() // dont bake the selection box into the photo
+  const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', .92))
+  try {
+    await putPhoto({ id: Date.now() + '-' + Math.random().toString(36).slice(2, 6), created: Date.now(), kind: tplId, blob })
+    toast('Saved to your gallery 🍒')
+    shots = []; processed = []; drawShotSlots()
+    show('gallery')
+  } catch (e) {
+    selectSticker(prevSel); compose()
+    toast('Couldn’t save. Your browser storage might be full or blocked.')
+  }
+}
+
+let urls = []
+async function renderGallery() {
+  urls.forEach(u => URL.revokeObjectURL(u)); urls = []
+  let photos = []
+  try { photos = (await allPhotos()).sort((a, b) => b.created - a.created) } catch (e) {}
+  $('gallery').innerHTML = ''
+  $('empty').hidden = photos.length > 0
+  $('galleryTop').hidden = !photos.length
+  galleryPhotos = photos
+  $('tab-gallery').textContent = photos.length ? `Gallery (${photos.length})` : 'Gallery'
+  const tapes = ['rgba(251,231,161,.85)', 'rgba(247,194,206,.85)', 'rgba(185,205,176,.85)', 'repeating-linear-gradient(45deg,rgba(200,36,63,.35) 0 6px,rgba(255,255,255,.6) 6px 12px)']
+  photos.forEach((p, i) => {
+    const u = URL.createObjectURL(p.blob); urls.push(u)
+    const b = document.createElement('div')
+    b.className = 'pin'
+    b.style.setProperty('--tape', ((i * 37) % 11 - 5) + 'deg')
+    b.style.setProperty('--tapecol', tapes[i % tapes.length])
+    b.style.transform = `rotate(${((i * 53) % 7 - 3) * .5}deg)`
+    b.innerHTML = `<img src="${u}" alt="Photo from ${new Date(p.created).toLocaleDateString()}" tabindex="0"><button class="pin-dl" aria-label="Download this photo">⬇</button>`
+    b.querySelector('img').onclick = () => openLightbox(p, u)
+    b.querySelector('img').onkeydown = e => { if (e.key == 'Enter') openLightbox(p, u) }
+    b.querySelector('.pin-dl').onclick = () => downloadBlob(p.blob, fileName(p.created))
+    $('gallery').append(b)
+  })
+}
+
+let current = null
+function openLightbox(p, u) {
+  current = p
+  $('lbImg').src = u
+  $('lightbox').classList.add('on')
+}
+$('lbClose').onclick = () => $('lightbox').classList.remove('on')
+$('lightbox').onclick = e => { if (e.target == $('lightbox')) $('lightbox').classList.remove('on') }
+$('lbDel').onclick = async () => {
+  if (!current || !confirm('Delete this photo?')) return
+  await delPhoto(current.id)
+  $('lightbox').classList.remove('on')
+  toast('Deleted')
+  renderGallery()
+}
+const fileName = (t, n) => `cherry-booth-${new Date(t).toISOString().slice(0, 10)}${n ? '-' + n : ''}.jpg`
+async function downloadBlob(blob, name, quiet) {
+  // inside claude.ai, downloads go through the viewer
+  try {
+    if (window.claude && claude.use) {
+      const dl = await claude.use('downloads')
+      if (dl) { await dl.save({ filename: name, data: blob }); if (!quiet) toast('Downloaded'); return true }
+    }
+  } catch (e) { if (e && e.code == 'declined') return false }
+  // phones: the share sheet has "Save image", which beats a download link
+  if (!quiet) try {
+    const file = new File([blob], name, { type: 'image/jpeg' })
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return true }
+  } catch (e) { if (e && e.name == 'AbortError') return false }
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = name
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000)
+  return true
+}
+$('lbDown').onclick = () => current && downloadBlob(current.blob, fileName(current.created))
+
+let galleryPhotos = []
+$('dlAll').onclick = async () => {
+  if (!galleryPhotos.length) return
+  // phones can share a bunch at once, everywhere else download them one by one
+  try {
+    const files = galleryPhotos.map((p, i) => new File([p.blob], fileName(p.created, i + 1), { type: 'image/jpeg' }))
+    if (!(window.claude && claude.use) && navigator.canShare && navigator.canShare({ files })) { await navigator.share({ files }); return }
+  } catch (e) { if (e && e.name == 'AbortError') return }
+  toast(`Downloading ${galleryPhotos.length} photos…`)
+  for (const [i, p] of galleryPhotos.entries()) {
+    if (!(await downloadBlob(p.blob, fileName(p.created, i + 1), true))) return
+    await wait(350)
+  }
+}
+
+// download straight from the editor, no saving needed
+$('dlNow').onclick = async () => {
+  const prevSel = edit.sel
+  selectSticker(-1); compose()
+  const blob = await new Promise(r => out.toBlob(r, 'image/jpeg', .92))
+  await downloadBlob(blob, fileName(Date.now()))
+  if (prevSel >= 0 && prevSel < edit.stickers.length) { selectSticker(prevSel); compose() }
+}
+
+// ---------- navigation ----------
+function show(v) {
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id == 'v-' + v))
+  $('tab-booth').classList.toggle('on', v != 'gallery')
+  $('tab-gallery').classList.toggle('on', v == 'gallery')
+  if (v == 'gallery') renderGallery()
+  scrollTo(0, 0)
+}
+$('tab-booth').onclick = () => show(shots.length && processed.length ? 'edit' : 'booth')
+$('tab-gallery').onclick = () => show('gallery')
+
+setTemplate('classic')
+renderGallery()
+loadMine()
+$('camMsg').textContent = 'Tap the camera button to start'
+</script>
+</body>
+</html>
